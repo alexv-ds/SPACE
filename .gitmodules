@@ -1,0 +1,9 @@
+[submodule "dep/SFML"]
+	path = dep/SFML
+	url = https://github.com/SFML/SFML.git
+[submodule "dep/flecs"]
+	path = dep/flecs
+	url = https://github.com/SanderMertens/flecs.git
+[submodule "dep/spdlog"]
+	path = dep/spdlog
+	url = https://github.com/gabime/spdlog.git
