@@ -30,3 +30,8 @@ target_link_libraries(main PRIVATE
   flecs::flecs_static
   spdlog::spdlog
 )
+
+
+#GLAD LIBRARY
+add_subdirectory(dep/glad)
+target_link_libraries(main PRIVATE glad::glad)
