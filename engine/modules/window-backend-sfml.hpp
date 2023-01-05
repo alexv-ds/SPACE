@@ -1,3 +1,4 @@
+#pragma once
 #include <memory>
 #include <flecs.h>
 #include <SFML/Window.hpp>
