@@ -83,7 +83,9 @@
     "xlocmon": "cpp",
     "xlocnum": "cpp",
     "xloctime": "cpp",
-    "xtree": "cpp"
+    "xtree": "cpp",
+    "ranges": "cpp",
+    "glad.h": "c"
   },
   "cmake.debugConfig" : {
     "cwd": "${workspaceFolder}"

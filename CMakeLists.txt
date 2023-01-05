@@ -23,6 +23,7 @@ add_executable(main
   engine/modules/window-backend-sfml.cpp
   engine/modules/filesystem.cpp
   engine/modules/filesystem-backend-stdlib.cpp
+  engine/modules/opengl.cpp
 )
 
 target_link_libraries(main PRIVATE

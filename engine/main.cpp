@@ -18,15 +18,7 @@ int main(int argc, char const *argv[]) {
   world.import<engine::WindowBackendSfml>();
   world.import<engine::Filesystem>();
   world.import<engine::FilesystemBackendStdlib>();
-
-  //world.set<engine::window::MainWindowInit>({});
-  world.entity().set<engine::filesystem::ReadFileRequest>({.path="CMakeLists.txt"});
-  world.system<const engine::filesystem::ReadFileResponse>()
-    .each([](flecs::entity e, const engine::filesystem::ReadFileResponse& res) {
-      std::string str(reinterpret_cast<const char*>(res.data.data()), res.data.size());
-      SPDLOG_DEBUG("{}", std::move(str));
-      e.destruct();
-    });
+  world.set<engine::window::MainWindowInit>({});
 
   world.app().enable_rest().run();
   return 0;

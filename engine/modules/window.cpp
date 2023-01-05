@@ -3,10 +3,16 @@
 #include <spdlog/spdlog.h>
 
 namespace engine::window::detail {
-  void CleanupEvents(flecs::entity e) {
-    e.destruct();
-  }  
-};
+
+void CleanupEvents(flecs::entity e) {
+  e.destruct();
+}
+
+void UpdateSize(flecs::iter it, const window::event::Resized* event) {
+  SPDLOG_INFO("BOOOOOOOP2");
+} 
+
+}; //namespace engine::window::detail
 
 
 namespace engine {
@@ -188,11 +194,21 @@ namespace engine {
     //systems
 
     world.system("system::CleanupEvents")
+      .multi_threaded()
       .kind(flecs::PostFrame)
       .term<MainWindow>().singleton()
       .term<Event>()
       .term(flecs::ChildOf, world.entity<window::MainWindow>())
       .each(detail::CleanupEvents);
+    
+    world.system<const window::Event, const window::event::Resized>("system::UpdateSize")
+      .multi_threaded()
+      .kind(flecs::PostLoad)
+      .term(flecs::ChildOf, world.entity<window::MainWindow>())
+      .order_by([](flecs::entity_t e1, const window::Event* event1, flecs::entity_t e2, const window::Event* event2) {
+        return (int)1;//(event1->index > event2->index) - (event1->index < event2->index);
+      })
+      .iter(detail::UpdateSize);
   };
 }
 
