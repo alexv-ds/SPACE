@@ -6,8 +6,8 @@
 
 namespace engine::opengl {
 
-void UpdateViewport(flecs::iter it, const window::MainWindow* window) {
-  //SPDLOG_DEBUG("BOOOOP, {}, {}", window->height, window->width);
+void UpdateViewport(flecs::iter it, const window::MainWindow* window, const window::event::Resized*) {
+  glViewport(0, 0, window->width, window->height);
 }
 
 void PreRenderClearWindow(flecs::iter it) {
@@ -31,8 +31,9 @@ Opengl::Opengl(flecs::world& world) {
   world.system("system::PreRenderClearWindow")
     .term<OpenglContext>().singleton()
     .iter(PreRenderClearWindow);
-  world.system<const window::MainWindow>("system::UpdateViewport")
-    .term_at(1).singleton()
+  world.system<const window::MainWindow, const window::event::Resized>("system::UpdateViewport")
+    .kind(flecs::PreStore)
+    .term_at(1).parent()
     .iter(UpdateViewport);
 }
 
