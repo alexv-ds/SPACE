@@ -15,6 +15,8 @@ add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
 find_package(SFML REQUIRED)
 find_package(FLECS REQUIRED)
 find_package(SPDLOG REQUIRED)
+find_package(GLM REQUIRED)
+
 add_executable(main
   engine/main.cpp
   engine/setup_spdlog.cpp
@@ -24,12 +26,14 @@ add_executable(main
   engine/modules/filesystem.cpp
   engine/modules/filesystem-backend-stdlib.cpp
   engine/modules/opengl.cpp
+  engine/modules/transform.cpp
 )
 
 target_link_libraries(main PRIVATE
   SFML::SFML
   flecs::flecs_static
   spdlog::spdlog
+  glm_libs
 )
 
 

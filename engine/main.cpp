@@ -10,7 +10,7 @@
 int main(int argc, char const *argv[]) {
   engine::setup_spdlog();
   flecs::world world;
-  world.set_target_fps(5);
+  world.set_target_fps(50);
   world.set_threads(4);
   world.import<flecs::monitor>();
 

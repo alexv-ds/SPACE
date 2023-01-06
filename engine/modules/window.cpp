@@ -8,9 +8,16 @@ void CleanupEvents(flecs::entity e) {
   e.destruct();
 }
 
-void UpdateSize(flecs::iter it, const window::event::Resized* event) {
-  SPDLOG_INFO("BOOOOOOOP2");
-} 
+void UpdateSize(flecs::iter it, const window::Event*, const window::event::Resized* resized) {
+  const window::event::Resized* last_event = resized + (*it.end() - 1);
+  MainWindow* window = it.world().get_mut<MainWindow>();
+  window->height = last_event->height;
+  window->width = last_event->width;
+}
+
+int compare_event_index(flecs::entity_t e1, const window::Event* event1, flecs::entity_t e2, const window::Event* event2) {
+  return (event1->index > event2->index) - (event1->index < event2->index);
+}
 
 }; //namespace engine::window::detail
 
@@ -205,9 +212,7 @@ namespace engine {
       .multi_threaded()
       .kind(flecs::PostLoad)
       .term(flecs::ChildOf, world.entity<window::MainWindow>())
-      .order_by([](flecs::entity_t e1, const window::Event* event1, flecs::entity_t e2, const window::Event* event2) {
-        return (int)1;//(event1->index > event2->index) - (event1->index < event2->index);
-      })
+      .order_by(detail::compare_event_index)
       .iter(detail::UpdateSize);
   };
 }
