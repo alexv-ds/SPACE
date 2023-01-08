@@ -23,12 +23,6 @@ int main(int argc, char const *argv[]) {
   world.import<engine::Transform>();
   world.set<engine::window::MainWindowInit>({});
 
-  world.entity().set<engine::opengl::ShaderProgramLoader>({
-    .vs_path = "resources/shader.vs",
-    .fs_path = "resources/shader.fs",
-  });
-
-
   world.app().enable_rest().run();
   return 0;
 }
