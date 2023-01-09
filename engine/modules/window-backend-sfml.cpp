@@ -6,10 +6,8 @@
 #include <spdlog/spdlog.h>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
-#include <glad/gl.h>
 #include "window-backend-sfml.hpp"
 #include "window.hpp"
-#include "opengl.hpp"
 
 
 namespace engine::window_backend_sfml::internal {
@@ -131,93 +129,6 @@ const std::unordered_map<sf::Mouse::Button, window::MouseButton> mouse_mapping =
 };
 
 /////////////////////////////////////
-/////////////OGL STUFF///////////////
-/////////////////////////////////////
-
-static GLADapiproc gl_load_function(const char* name) {
-  return sf::Context::getFunction(name);
-}
-
-class GLContextLockIMPL final : public opengl::GLContextLock {
-public:
-  GLContextLockIMPL(std::shared_ptr<sf::Window> window): window(std::move(window)) {
-    bool flag_test_result = glad_initialised.test_and_set();
-    if (flag_test_result == true) {
-      throw std::logic_error("Cannot init glad - glad already initialised");
-    }
-    int glad_init_result = gladLoadGL(gl_load_function);
-    if (glad_init_result == 0) {
-      glad_initialised.clear();
-      throw std::logic_error("Glad initialisation failed");
-    };
-  }
-  ~GLContextLockIMPL() {
-    glad_initialised.clear();
-    //Я НЕ НАШЕЛ ФУНКЦИИ, КОТОРАЯ ВЫГРУЖАЕТ GLAD!!!!
-  }
-private:
-  static std::atomic_flag glad_initialised;
-  std::shared_ptr<sf::Window> window;
-}; 
-
-std::atomic_flag GLContextLockIMPL::glad_initialised;
-
-void gl_message_callback(GLenum source,
-                         GLenum type,
-                         GLuint id,
-                         GLenum severity,
-                         GLsizei length,
-                         GLchar const* message,
-                         void const* user_param)
-{
-	auto const src_str = [source]() {
-		switch (source) {
-      case GL_DEBUG_SOURCE_API: return "API";
-      case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "WINDOW SYSTEM";
-      case GL_DEBUG_SOURCE_SHADER_COMPILER: return "SHADER COMPILER";
-      case GL_DEBUG_SOURCE_THIRD_PARTY: return "THIRD PARTY";
-      case GL_DEBUG_SOURCE_APPLICATION: return "APPLICATION";
-      case GL_DEBUG_SOURCE_OTHER: return "OTHER";
-      default: return "UNKNOWN";
-		}
-	}();
-
-	auto const type_str = [type]() {
-		switch (type)	{
-      case GL_DEBUG_TYPE_ERROR: return "ERROR";
-      case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "DEPRECATED_BEHAVIOR";
-      case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "UNDEFINED_BEHAVIOR";
-      case GL_DEBUG_TYPE_PORTABILITY: return "PORTABILITY";
-      case GL_DEBUG_TYPE_PERFORMANCE: return "PERFORMANCE";
-      case GL_DEBUG_TYPE_MARKER: return "MARKER";
-      case GL_DEBUG_TYPE_OTHER: return "OTHER";
-      default: return "UNKNOWN";
-		}
-	}();
-
-  std::string msg = std::format("{}, {}, {}: {}", src_str, type_str, id, message);
-  switch (severity) {
-    case GL_DEBUG_SEVERITY_NOTIFICATION: {
-      SPDLOG_DEBUG(msg);
-      break;
-    }
-    case GL_DEBUG_SEVERITY_LOW: {
-      SPDLOG_WARN(msg);
-      break;
-    }
-    case GL_DEBUG_SEVERITY_MEDIUM: {
-      SPDLOG_ERROR(msg);
-      break;
-    }
-    case GL_DEBUG_SEVERITY_HIGH: {
-      SPDLOG_CRITICAL(msg);
-      break;
-    }
-  } //end of switch
-}
-
-
-/////////////////////////////////////
 /////////////SYSTEMS/////////////////
 /////////////////////////////////////
 
@@ -236,11 +147,11 @@ void InitSystem(flecs::iter it, const window::MainWindowInit* init) {
   std::uint32_t style = static_cast<std::uint32_t>(init->style);
 
   sf::ContextSettings settings;
-  settings.majorVersion = 4;
-  settings.minorVersion = 6;
-  settings.attributeFlags = sf::ContextSettings::Core | sf::ContextSettings::Debug;
+  settings.majorVersion = 3;
+  settings.minorVersion = 2;
+  settings.attributeFlags = sf::ContextSettings::Default;
 
-  std::shared_ptr sfml_window = std::make_shared<sf::Window>();
+  std::shared_ptr sfml_window = std::make_shared<sf::RenderWindow>();
   sfml_window->create(video_mode, init->title, style, settings);
   sf::ContextSettings actual_settings = sfml_window->getSettings();
   it.world().set<MainWindowSFML>({sfml_window});
@@ -268,19 +179,6 @@ void InitSystem(flecs::iter it, const window::MainWindowInit* init) {
   }
   if (settings.sRgbCapable != actual_settings.sRgbCapable) {
     SPDLOG_WARN("Запрашиваемое значение sRgbCapable ({}) отличается от фактически созданного ({})", settings.sRgbCapable, actual_settings.sRgbCapable);
-  }
-  try {
-    it.world().set<opengl::OpenglContext>({
-      .gl_lock = std::make_shared<GLContextLockIMPL>(sfml_window)
-    });
-    glViewport(0, 0, init->width, init->height);
-    //gl debug
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(gl_message_callback, nullptr);
-  }
-  catch(const std::exception& exception) {
-    SPDLOG_CRITICAL("Cannot create OpenglContext: {}", exception.what());
   }
 }
 
@@ -437,6 +335,14 @@ void WindowDisplay(flecs::iter it, const MainWindowSFML* sfml_window) {
   sfml_window->window->display();
 };
 
+void WindowClear(flecs::iter it, const MainWindowSFML* sfml_window) {
+  if(!sfml_window->window || !sfml_window->window->isOpen()) {
+    SPDLOG_ERROR("Cannot display() SFML Window: window does not exist");
+    return;
+  }
+  sfml_window->window->clear(sf::Color(50,50,50));
+};
+
 
 } //namespace engine::window_backend_sfml::internal
 
@@ -445,26 +351,26 @@ namespace engine {
 
   WindowBackendSfml::WindowBackendSfml(flecs::world& world) {
     world.import<Window>();
-    world.import<Opengl>();
     world.module<WindowBackendSfml>("window_backend_sfml");
 
     world.system<const window::MainWindowInit>("system::InitSystem")
-      .no_readonly()
       .term_at(1).singleton()
       .iter(internal::InitSystem);
     
     world.system<const MainWindowSFML>("system::EventPoll")
-      .no_readonly()
       .kind(flecs::OnLoad)
       .term_at(1).singleton()
       .term<window::MainWindow>().singleton()
       .iter(internal::EventPoll);
     
     world.system<const MainWindowSFML>("system::WindowDisplay")
-      .no_readonly()
       .kind(flecs::PostFrame)
       .term_at(1).singleton()
-      .term<window::MainWindow>().singleton()
       .iter(internal::WindowDisplay);
+    
+    world.system<const MainWindowSFML>("system::WindowClear")
+      .kind(flecs::PreStore)
+      .term_at(1).singleton()
+      .iter(internal::WindowClear);
   }
 } //namespace engine::window_backend_sfml::internal

@@ -25,7 +25,6 @@ add_executable(main
   engine/modules/window-backend-sfml.cpp
   engine/modules/filesystem.cpp
   engine/modules/filesystem-backend-stdlib.cpp
-  engine/modules/opengl.cpp
   engine/modules/transform.cpp
 )
 
@@ -35,8 +34,3 @@ target_link_libraries(main PRIVATE
   spdlog::spdlog
   glm_libs
 )
-
-
-#GLAD LIBRARY
-add_subdirectory(dep/glad)
-target_link_libraries(main PRIVATE glad::glad)

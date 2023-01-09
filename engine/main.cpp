@@ -7,7 +7,6 @@
 #include "modules/filesystem.hpp"
 #include "modules/filesystem-backend-stdlib.hpp"
 #include "modules/transform.hpp"
-#include "modules/opengl.hpp"
 
 int main(int argc, char const *argv[]) {
   engine::setup_spdlog();
