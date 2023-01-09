@@ -26,6 +26,9 @@ add_executable(main
   engine/modules/filesystem.cpp
   engine/modules/filesystem-backend-stdlib.cpp
   engine/modules/transform.cpp
+  engine/modules/graphics.cpp
+  engine/modules/geometry.cpp
+  engine/modules/glm-reflection.cpp
 )
 
 target_link_libraries(main PRIVATE

@@ -7,11 +7,13 @@
 #include "modules/filesystem.hpp"
 #include "modules/filesystem-backend-stdlib.hpp"
 #include "modules/transform.hpp"
+#include "modules/graphics.hpp"
+#include "modules/geometry.hpp"
 
 int main(int argc, char const *argv[]) {
   engine::setup_spdlog();
   flecs::world world;
-  world.set_target_fps(4);
+  world.set_target_fps(40);
   world.set_threads(4);
   world.import<flecs::monitor>();
 
@@ -21,6 +23,16 @@ int main(int argc, char const *argv[]) {
   world.import<engine::FilesystemBackendStdlib>();
   world.import<engine::Transform>();
   world.set<engine::window::MainWindowInit>({});
+  world.import<engine::Graphics>();
+  world.import<engine::Geometry>();
+
+  flecs::entity camera = world.entity()
+    .set_doc_name("Main Camera")
+    .add<engine::geometry::Rectangle>()
+    .add<engine::graphics::Camera>()
+    .set<engine::graphics::MainWindowCamera>({
+      .camera_size = {7, 7}
+    });
 
   world.app().enable_rest().run();
   return 0;
