@@ -9,6 +9,7 @@
 #include "modules/transform.hpp"
 #include "modules/graphics.hpp"
 #include "modules/geometry.hpp"
+#include "modules/graphics-backend-sfml.hpp"
 
 int main(int argc, char const *argv[]) {
   engine::setup_spdlog();
@@ -24,6 +25,7 @@ int main(int argc, char const *argv[]) {
   world.import<engine::Transform>();
   world.set<engine::window::MainWindowInit>({});
   world.import<engine::Graphics>();
+  world.import<engine::GraphicsBackendSFML>();
   world.import<engine::Geometry>();
 
   flecs::entity camera = world.entity()

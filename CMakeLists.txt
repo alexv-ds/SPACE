@@ -29,6 +29,7 @@ add_executable(main
   engine/modules/graphics.cpp
   engine/modules/geometry.cpp
   engine/modules/glm-reflection.cpp
+  engine/modules/graphics-backend-sfml.cpp
 )
 
 target_link_libraries(main PRIVATE
