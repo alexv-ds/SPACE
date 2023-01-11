@@ -28,13 +28,23 @@ int main(int argc, char const *argv[]) {
   world.import<engine::GraphicsBackendSFML>();
   world.import<engine::Geometry>();
 
+  flecs::entity drawable = world.entity()
+    .set_doc_name("drawable")
+    .set<engine::geometry::Square>({.size=1})
+    .set<engine::transform::Position2>({.x=1,.y=1});
+
   flecs::entity camera = world.entity()
     .set_doc_name("Main Camera")
     .add<engine::geometry::Rectangle>()
     .add<engine::graphics::Camera>()
     .set<engine::graphics::MainWindowCamera>({
       .camera_size = {7, 7}
-    });
+    })
+    .set<engine::transform::Position2>({
+      .x = 0,
+      .y = 0
+    })
+    .add<engine::graphics::OnRender>(drawable);
 
   world.app().enable_rest().run();
   return 0;

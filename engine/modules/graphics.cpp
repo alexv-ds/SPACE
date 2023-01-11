@@ -39,7 +39,6 @@ Graphics::Graphics(flecs::world& world) {
   world.component<Transparency>()
     .member<decltype(Transparency::a)>("a");
 
-  world.component<Renderable>();
   world.component<Camera>();
 
   world.component<MainWindowCamera>()

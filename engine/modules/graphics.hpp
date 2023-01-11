@@ -26,13 +26,17 @@ struct Transparency {
   std::uint8_t a = 255;
 };
 
-struct Renderable {};
-
 struct Camera {};
 
 struct MainWindowCamera {
   //glm::mat3 screen_space_transform;
   glm::vec2 camera_size;
 };
+
+struct Layer {
+  float value;
+};
+
+struct OnRender {};
 
 } //namespace engine::graphics
