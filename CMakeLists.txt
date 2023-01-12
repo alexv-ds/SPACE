@@ -25,8 +25,11 @@ add_executable(main
   engine/modules/window-backend-sfml.cpp
   engine/modules/filesystem.cpp
   engine/modules/filesystem-backend-stdlib.cpp
-  engine/modules/opengl.cpp
   engine/modules/transform.cpp
+  engine/modules/graphics.cpp
+  engine/modules/geometry.cpp
+  engine/modules/glm-reflection.cpp
+  engine/modules/graphics-backend-sfml.cpp
 )
 
 target_link_libraries(main PRIVATE
@@ -36,7 +39,9 @@ target_link_libraries(main PRIVATE
   glm_libs
 )
 
-
-#GLAD LIBRARY
-add_subdirectory(dep/glad)
-target_link_libraries(main PRIVATE glad::glad)
+add_executable(game
+  game/main.cpp
+  game/powernet.cpp
+  engine/setup_spdlog.cpp
+)
+target_link_libraries(game PRIVATE flecs::flecs_static spdlog::spdlog)
