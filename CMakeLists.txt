@@ -21,15 +21,15 @@ add_executable(main
   engine/main.cpp
   engine/setup_spdlog.cpp
 
-  engine/modules/window.cpp
-  engine/modules/window-backend-sfml.cpp
-  engine/modules/filesystem.cpp
   engine/modules/filesystem-backend-stdlib.cpp
-  engine/modules/transform.cpp
-  engine/modules/graphics.cpp
+  engine/modules/filesystem.cpp
   engine/modules/geometry.cpp
   engine/modules/glm-reflection.cpp
   engine/modules/graphics-backend-sfml.cpp
+  engine/modules/graphics.cpp
+  engine/modules/transform.cpp
+  engine/modules/window-backend-sfml.cpp
+  engine/modules/window.cpp
 )
 
 target_link_libraries(main PRIVATE
