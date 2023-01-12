@@ -5,7 +5,8 @@
 namespace game {
 
 struct Powernet {
-  flecs::entity_t update_tick_source;
+  flecs::entity_t slow_powernet_tick_source; //каждые 5 тиков от normal_powernet_tick_source
+  flecs::entity_t normal_powernet_tick_source; //5 Hz
 
   Powernet(flecs::world&);
 };
@@ -42,8 +43,8 @@ struct EnergyStorage {
   float max_energy = std::numeric_limits<float>::infinity();
 
   //internal
-  float last_update_output_power = 0;
-  float last_update_input_power = 0;
+  //Положительное если "отдает" от себя, отрицательное если "забирает" 
+  float last_update_power = 0;
 };
 
 struct Link {};
@@ -52,9 +53,8 @@ struct Powerized {};
 
 struct Disabled {};
 
-//struct EnergyStore {
-//  float max_power; //Watt
-//  float energy; //J
-//};
+//Отсутствие любого из этих компонентов воспринимается как NormalUpdate
+struct SlowPowernetUpdate {};
+struct FastPowernetUpdate {};
 
 } //namespace game::powernet
