@@ -38,3 +38,10 @@ target_link_libraries(main PRIVATE
   spdlog::spdlog
   glm_libs
 )
+
+add_executable(game
+  game/main.cpp
+  game/powernet.cpp
+  engine/setup_spdlog.cpp
+)
+target_link_libraries(game PRIVATE flecs::flecs_static spdlog::spdlog)
