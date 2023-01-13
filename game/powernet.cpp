@@ -1,5 +1,6 @@
 #include <cmath>
-#include <spdlog/spdlog.h>
+#include <type_traits>
+#include <format>
 #include "powernet.hpp"
 
 namespace game::powernet::detail {
@@ -68,8 +69,171 @@ static inline void ObserverOnSet_Disabled(flecs::entity e) {
 }
 
 template<class T = void>
-static void create_systems_set(flecs::entity_t tick_source) {
+static void create_systems_set(flecs::world& world, const flecs::entity_t tick_source, const char* speed_name) {
+  //CleanupPowernetLastFrameData
+  {
+    flecs::entity cleanup_system_scope = world.entity("system::CleanupPowernetLastFrameData");
+    flecs::system_builder cleanup_system = world.system<Powernet>(std::format("{}_CleanupPowernetLastFrameData", speed_name).c_str());
 
+    cleanup_system.instanced();
+    if constexpr (std::is_void_v<T>) {
+      cleanup_system.without<SlowPowernetUpdate>();
+      cleanup_system.without<FastPowernetUpdate>();
+    } else  {
+      if constexpr (std::is_same_v<T, FastPowernetUpdate>) {
+        cleanup_system.with<FastPowernetUpdate>();
+        cleanup_system.without<SlowPowernetUpdate>();
+      } else {
+        cleanup_system.with<SlowPowernetUpdate>();
+        cleanup_system.without<FastPowernetUpdate>();
+      }
+    }
+    if (tick_source) {
+      cleanup_system.tick_source(tick_source);
+    }
+    cleanup_system
+      .iter(CleanupPowernetLastFrameData)
+      .child_of(cleanup_system_scope);
+  }
+
+  //GeneratePower
+  {
+    flecs::entity generate_system_scope = world.entity("system::GeneratePower");
+    flecs::system_builder generate_system = world.system<Powernet, const Producer>(std::format("{}_GeneratePower", speed_name).c_str());
+
+    generate_system.arg(1).up<Link>();
+    generate_system.without<Disabled>();
+    if constexpr (std::is_void_v<T>) {
+      generate_system.without<SlowPowernetUpdate>().up<Link>();
+      generate_system.without<FastPowernetUpdate>().up<Link>();
+    } else {
+      if constexpr (std::is_same_v<T, FastPowernetUpdate>) {
+        generate_system.with<FastPowernetUpdate>().up<Link>();
+        generate_system.without<SlowPowernetUpdate>().up<Link>();
+      } else {
+        generate_system.with<SlowPowernetUpdate>().up<Link>();
+        generate_system.without<FastPowernetUpdate>().up<Link>();
+      }
+    }
+    if (tick_source) {
+      generate_system.tick_source(tick_source);
+    }
+    generate_system
+      .each(GeneratePower)
+      .child_of(generate_system_scope);
+  }
+
+  //ConsumePower
+  {
+    flecs::entity consume_system_scope = world.entity("system::ConsumePower");
+    flecs::system_builder consume_system = world.system<Powernet, const Consumer>(std::format("{}_ConsumePower", speed_name).c_str());
+
+    consume_system.term_at(1).up<Link>();
+    consume_system.without<Disabled>();
+    if constexpr (std::is_void_v<T>) {
+      consume_system.without<SlowPowernetUpdate>().up<Link>();
+      consume_system.without<FastPowernetUpdate>().up<Link>();
+    } else {
+      if constexpr (std::is_same_v<T, FastPowernetUpdate>) {
+        consume_system.with<FastPowernetUpdate>().up<Link>();
+        consume_system.without<SlowPowernetUpdate>().up<Link>();
+      } else {
+        consume_system.with<SlowPowernetUpdate>().up<Link>();
+        consume_system.without<FastPowernetUpdate>().up<Link>();
+      }
+    }
+    if (tick_source) {
+      consume_system.tick_source(tick_source);
+    }
+    consume_system
+      .each(ConsumePower)
+      .child_of(consume_system_scope);
+  }
+
+  //UpdateEnergyStorages
+  {
+    flecs::entity storages_system_scope = world.entity("system::UpdateEnergyStorages");
+    flecs::system_builder storages_system = world.system<Powernet, EnergyStorage>(std::format("{}_UpdateEnergyStorages", speed_name).c_str());
+
+    storages_system.arg(1).up<Link>();
+    storages_system.without<Disabled>();
+    if constexpr (std::is_void_v<T>) {
+      storages_system.without<SlowPowernetUpdate>().up<Link>();
+      storages_system.without<FastPowernetUpdate>().up<Link>();
+    } else {
+      if constexpr (std::is_same_v<T, FastPowernetUpdate>) {
+        storages_system.with<FastPowernetUpdate>().up<Link>();
+        storages_system.without<SlowPowernetUpdate>().up<Link>();
+      } else {
+        storages_system.with<SlowPowernetUpdate>().up<Link>();
+        storages_system.without<FastPowernetUpdate>().up<Link>();
+      }
+    }
+    if (tick_source) {
+      storages_system.tick_source(tick_source);
+    }
+    storages_system
+      .each(UpdateEnergyStorages)
+      .child_of(storages_system_scope);
+  }
+
+  //UpdateConsumers
+  {
+    flecs::entity update_consumers_system_scope = world.entity("system::UpdateConsumers");
+    flecs::system_builder update_consumers_system = world.system<Powernet, const Consumer>(std::format("{}_UpdateConsumers", speed_name).c_str());
+
+    update_consumers_system.arg(1).up<Link>();
+    update_consumers_system.with<Powerized>().optional().inout();
+    update_consumers_system.without<Disabled>();
+    if constexpr (std::is_void_v<T>) {
+      update_consumers_system.without<SlowPowernetUpdate>().up<Link>();
+      update_consumers_system.without<FastPowernetUpdate>().up<Link>();
+    } else {
+      if constexpr (std::is_same_v<T, FastPowernetUpdate>) {
+        update_consumers_system.with<FastPowernetUpdate>().up<Link>();
+        update_consumers_system.without<SlowPowernetUpdate>().up<Link>();
+      } else {
+        update_consumers_system.with<SlowPowernetUpdate>().up<Link>();
+        update_consumers_system.without<FastPowernetUpdate>().up<Link>();
+      }
+    }
+    if (tick_source) {
+      update_consumers_system.tick_source(tick_source);
+    }
+    update_consumers_system
+      .iter(powernet::detail::UpdateConsumers)
+      .child_of(update_consumers_system_scope);
+  }  
+}
+
+static void register_components(flecs::world& world) {
+  world.component<Powernet>()
+    .member<float>("power_consumption")
+    .member<float>("power_generation")
+    .member<float>("on_frame_power_usage");
+
+  world.component<Consumer>()
+    .member<float>("power");
+
+  world.component<Producer>()
+    .member<float>("power");
+
+  world.component<Link>()
+    .add(flecs::Acyclic);
+
+  world.component<Powerized>();
+  world.component<Disabled>();
+
+  world.component<EnergyStorage>()
+    .member<float>("min_output_power")
+    .member<float>("max_output_power")
+    .member<float>("input_power")
+    .member<float>("energy")
+    .member<float>("max_energy")
+    .member<float>("last_update_power");
+
+  world.component<SlowPowernetUpdate>();
+  world.component<FastPowernetUpdate>();
 }
 
 } //namespace game::powernet::detail
@@ -81,30 +245,7 @@ Powernet::Powernet(flecs::world& world) {
   world.module<Powernet>("powernet");
 
   //components
-  world.component<powernet::Powernet>()
-    .member<float>("power_consumption")
-    .member<float>("power_generation")
-    .member<float>("on_frame_power_usage");
-
-  world.component<powernet::Consumer>()
-    .member<float>("power");
-
-  world.component<powernet::Producer>()
-    .member<float>("power");
-
-  world.component<powernet::Link>()
-    .add(flecs::Acyclic);
-
-  world.component<powernet::Powerized>();
-  world.component<powernet::Disabled>();
-
-  world.component<powernet::EnergyStorage>()
-    .member<float>("min_output_power")
-    .member<float>("max_output_power")
-    .member<float>("input_power")
-    .member<float>("energy")
-    .member<float>("max_energy")
-    .member<float>("last_update_power");
+  powernet::detail::register_components(world);
   
   //init tick sources
   flecs::entity timer_scope = world.entity("timer");
@@ -113,7 +254,7 @@ Powernet::Powernet(flecs::world& world) {
     .set_name("normal_powernet_tick_source")
     .child_of(timer_scope);
   this->slow_powernet_tick_source = world.timer()
-    .rate(5, normal_powernet_tick_source) //1 HZ
+    .interval(1.0f) //1 Hz
     .set_name("slow_powernet_tick_source")
     .child_of(timer_scope);
 
@@ -128,34 +269,9 @@ Powernet::Powernet(flecs::world& world) {
     .child_of(observer_scope);
   
   //systems
-  world.system<powernet::Powernet>("system::CleanupPowernetLastFrameData")
-    .instanced()
-    .iter(powernet::detail::CleanupPowernetLastFrameData);
-
-  world.system<powernet::Powernet, const powernet::Producer>("system::GeneratePower")
-    .arg(1).up<powernet::Link>()
-    .without<powernet::Disabled>()
-    .each(powernet::detail::GeneratePower);
-    
-  world.system<powernet::Powernet, const powernet::Consumer>("system::ConsumePower")
-    .term_at(1).up<powernet::Link>()
-    .without<powernet::Disabled>()
-    .each(powernet::detail::ConsumePower);
-
-  world.system<powernet::Powernet, powernet::EnergyStorage>("system::UpdateEnergyStorages")
-    .term_at(1).up<powernet::Link>()
-    .without<powernet::Disabled>()
-    .each(powernet::detail::UpdateEnergyStorages);
-
-  world.system<powernet::Powernet, const powernet::Consumer>("system::UpdateConsumers")
-    .arg(1).up<powernet::Link>()
-    .with<powernet::Powerized>().optional().inout()
-    .without<powernet::Disabled>()
-    .iter(powernet::detail::UpdateConsumers);
-
-  powernet::detail::create_systems_set<powernet::SlowPowernetUpdate>(this->slow_powernet_tick_source);
-  powernet::detail::create_systems_set(this->normal_powernet_tick_source);
-  powernet::detail::create_systems_set<powernet::FastPowernetUpdate>(0); //every frame
+  powernet::detail::create_systems_set<powernet::SlowPowernetUpdate>(world, this->slow_powernet_tick_source, "slow");
+  powernet::detail::create_systems_set(world, this->normal_powernet_tick_source, "normal");
+  powernet::detail::create_systems_set<powernet::FastPowernetUpdate>(world, 0, "fast"); //every frame
 }
 
 } //namespace game
