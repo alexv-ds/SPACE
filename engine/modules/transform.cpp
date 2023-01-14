@@ -5,7 +5,9 @@
 namespace engine::transform::detail {
 
 void AddTransform(flecs::entity e) {
-  e.add<Transform2>();
+  e.set<Transform2>({
+    .value = glm::mat3(1.0f)
+  });
 }
 
 void RemoveTransform(flecs::entity e) {
@@ -24,7 +26,7 @@ void ApplyTransform(flecs::iter       it,
     return;
   }
   for (auto i : it) {
-    transform_out[i].value = glm::mat3();
+    transform_out[i].value = glm::mat3(1.0f);
   }
   if (position) {
     for (auto i : it) {
