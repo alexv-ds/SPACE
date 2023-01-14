@@ -18,6 +18,9 @@ struct RenderTarget {
   std::shared_ptr<sf::RenderTarget> target;
 };
 
-//struct 
+struct Square {
+  sf::RectangleShape rect;
+  //sf::Vertex verts[4];
+};
 
 } //namespace engine::graphics_backend_sfml

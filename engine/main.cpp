@@ -18,20 +18,26 @@ int main(int argc, char const *argv[]) {
   world.set_threads(4);
   world.import<flecs::monitor>();
 
-  world.import<engine::Window>();
+  //world.import<engine::Window>();
   world.import<engine::WindowBackendSfml>();
+  world.set<engine::window::MainWindowInit>({});
   world.import<engine::Filesystem>();
   world.import<engine::FilesystemBackendStdlib>();
   world.import<engine::Transform>();
-  world.set<engine::window::MainWindowInit>({});
   world.import<engine::Graphics>();
   world.import<engine::GraphicsBackendSFML>();
   world.import<engine::Geometry>();
 
-  flecs::entity drawable = world.entity()
-    .set_doc_name("drawable")
-    .set<engine::geometry::Square>({.size=1})
-    .set<engine::transform::Position2>({.x=1,.y=1});
+  world.system<const engine::window_backend_sfml::MainWindowSFML>("testsys")
+    .kind(flecs::OnStore)
+    .arg(1).singleton()
+    .iter([](flecs::iter it, const engine::window_backend_sfml::MainWindowSFML* window_component) {
+      //sf::CircleShape shape(50.f);
+      //shape.setFillColor(sf::Color(150, 50, 250, 128));
+      //window_component->window->draw(shape);
+    });
+
+
 
   flecs::entity camera = world.entity()
     .set_doc_name("Main Camera")
@@ -41,10 +47,18 @@ int main(int argc, char const *argv[]) {
       .camera_size = {7, 7}
     })
     .set<engine::transform::Position2>({
-      .x = 0,
-      .y = 0
-    })
-    .add<engine::graphics::OnRender>(drawable);
+      .x = 1,
+      .y = 1
+    });
+
+  flecs::entity drawable = world.entity()
+    .set_doc_name("drawable")
+    .set<engine::geometry::Square>({.size=1})
+    .add<engine::graphics_backend_sfml::Square>()
+    //.set<engine::transform::Rotation2>({.angle = 30.30})
+    //.set<engine::transform::Scale2>({.x=2,.y=2})
+    .set<engine::transform::Position2>({.x=1,.y=1})
+    .add<engine::graphics::RenderedBy>(camera);
 
   world.app().enable_rest().run();
   return 0;

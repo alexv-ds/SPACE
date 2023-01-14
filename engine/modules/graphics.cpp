@@ -44,6 +44,9 @@ Graphics::Graphics(flecs::world& world) {
   world.component<MainWindowCamera>()
     .member<decltype(MainWindowCamera::camera_size)>("camera_size");
 
+  world.component<RenderedBy>()
+    .add(flecs::Acyclic);
+
 
   //systems
   world.system<const MainWindowCamera, geometry::Rectangle>("system::MainCameraSizeController")

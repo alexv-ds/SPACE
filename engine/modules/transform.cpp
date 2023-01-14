@@ -20,7 +20,6 @@ void ApplyTransform(flecs::iter       it,
                     const Rotation2*  rotation, 
                     const Scale2*     scale)
 {
-  
   if (!it.changed()) {
     it.skip();
     return;
@@ -28,7 +27,7 @@ void ApplyTransform(flecs::iter       it,
   for (auto i : it) {
     transform_out[i].value = glm::mat3(1.0f);
   }
-  if (position) {
+  if (position) {    
     for (auto i : it) {
       transform_out[i].value = glm::translate(transform_out[i].value, glm::vec2(position[i].x, position[i].y));
     }

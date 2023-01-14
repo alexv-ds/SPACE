@@ -37,6 +37,6 @@ struct Layer {
   float value;
 };
 
-struct OnRender {};
+struct RenderedBy {};
 
 } //namespace engine::graphics
