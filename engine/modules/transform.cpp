@@ -1,6 +1,7 @@
 #include <spdlog/spdlog.h>
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include "transform.hpp"
+#include "glm-reflection.hpp"
 
 namespace engine::transform::detail {
 
@@ -27,7 +28,8 @@ void ApplyTransform(flecs::iter       it,
   for (auto i : it) {
     transform_out[i].value = glm::mat3(1.0f);
   }
-  if (position) {    
+  
+  if (position) {   
     for (auto i : it) {
       transform_out[i].value = glm::translate(transform_out[i].value, glm::vec2(position[i].x, position[i].y));
     }
@@ -54,6 +56,7 @@ namespace engine {
 using namespace transform;
 
 Transform::Transform(flecs::world& world) {
+  world.import<GlmReflection>();
   world.module<Transform>("transform");
   
   world.component<Position2>()
@@ -67,7 +70,8 @@ Transform::Transform(flecs::world& world) {
   world.component<Rotation2>()
     .member<decltype(Rotation2::angle), flecs::units::angle::Radians>("angle");
 
-  world.component<Transform2>();
+  world.component<Transform2>()
+    .member<glm::mat3>("value");
 
   //systems
   world.system("system::AddTransform")
@@ -89,10 +93,10 @@ Transform::Transform(flecs::world& world) {
   
   world.system<Transform2, const Position2, const Rotation2, const Scale2>("system::ApplyTransform")
     //.multi_threaded() //не работает совместно с отслеживанием изменений таблицы
-    .instanced()
-    .term_at(2).or_()
-    .term_at(3).or_()
-    .term_at(4).or_()
+    //.instanced()
+    .term_at(2).optional()
+    .term_at(3).optional()
+    .term_at(4).optional()
     .iter(detail::ApplyTransform);
 
 }
