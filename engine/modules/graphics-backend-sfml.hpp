@@ -20,7 +20,14 @@ struct RenderTarget {
 
 struct Square {
   sf::RectangleShape rect;
-  //sf::Vertex verts[4];
+};
+
+struct Circle {
+  sf::CircleShape circle;
+};
+
+struct Rectangle {
+  sf::RectangleShape rect;
 };
 
 } //namespace engine::graphics_backend_sfml

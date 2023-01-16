@@ -3,6 +3,7 @@
 #include <glm/vec2.hpp>
 #include <glm/mat3x3.hpp>
 #include "graphics/Color.hpp"
+#include "graphics/color-list.hpp"
 
 namespace engine {
 
