@@ -43,5 +43,6 @@ add_executable(game
   game/main.cpp
   game/powernet.cpp
   engine/setup_spdlog.cpp
+  game/atmospherics.cpp
 )
 target_link_libraries(game PRIVATE flecs::flecs_static spdlog::spdlog)
