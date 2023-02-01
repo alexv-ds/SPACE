@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "Event.hpp"
-#include "../noncopyable.hpp"
+#include "../engine/noncopyable.hpp"
 
 namespace engine::window {
 

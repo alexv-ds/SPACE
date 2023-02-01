@@ -1,7 +1,7 @@
 #include <format>
 #include <spdlog/spdlog.h>
 #include <flecs.h>
-#include "../engine/setup_spdlog.hpp"
+#include "../engine/engine/setup_spdlog.hpp"
 #include "atmospherics.hpp"
 
 

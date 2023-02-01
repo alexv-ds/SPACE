@@ -18,18 +18,18 @@ find_package(SPDLOG REQUIRED)
 find_package(GLM REQUIRED)
 
 add_executable(main
-  engine/main.cpp
-  engine/setup_spdlog.cpp
+  engine/engine/main.cpp
+  engine/engine/setup_spdlog.cpp
 
-  engine/modules/filesystem-backend-stdlib.cpp
-  engine/modules/filesystem.cpp
-  engine/modules/geometry.cpp
-  engine/modules/glm-reflection.cpp
+  engine/filesystem-backend-stdlib.cpp
+  engine/filesystem.cpp
+  engine/geometry.cpp
+  engine/glm-reflection.cpp
   #engine/modules/graphics-backend-sfml.cpp
-  engine/modules/graphics.cpp
-  engine/modules/transform.cpp
-  engine/modules/window-backend-sfml.cpp
-  engine/modules/window.cpp
+  engine/graphics.cpp
+  engine/transform.cpp
+  engine/window-backend-sfml.cpp
+  engine/window.cpp
 )
 
 target_link_libraries(main PRIVATE
@@ -42,7 +42,7 @@ target_link_libraries(main PRIVATE
 add_executable(game
   game/main.cpp
   game/powernet.cpp
-  engine/setup_spdlog.cpp
+  engine/engine/setup_spdlog.cpp
   game/atmospherics.cpp
 )
 target_link_libraries(game PRIVATE flecs::flecs_static spdlog::spdlog)
