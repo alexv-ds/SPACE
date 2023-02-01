@@ -9,7 +9,7 @@
 #include "window-backend-sfml.hpp"
 #include "window.hpp"
 
-
+/*
 namespace engine::window_backend_sfml::internal {
 
 /////////////////////////////////////
@@ -68,10 +68,10 @@ const std::unordered_map<sf::Keyboard::Key, window::Key> key_mapping = {
   {sf::Keyboard::Semicolon, window::Key::Semicolon},
   {sf::Keyboard::Comma, window::Key::Comma},
   {sf::Keyboard::Period, window::Key::Period},
-  {sf::Keyboard::Quote, window::Key::Quote},
+  {sf::Keyboard::Apostrophe, window::Key::Quote}, //sf::Quote is deprecated
   {sf::Keyboard::Slash, window::Key::Slash},
   {sf::Keyboard::Backslash, window::Key::Backslash},
-  {sf::Keyboard::Tilde, window::Key::Tilde},
+  {sf::Keyboard::Grave, window::Key::Tilde}, //sf::Tilde is deprecated
   {sf::Keyboard::Equal, window::Key::Equal},
   {sf::Keyboard::Hyphen, window::Key::Hyphen},
   {sf::Keyboard::Space, window::Key::Space},
@@ -186,7 +186,7 @@ template <class T>
 static flecs::entity create_event_entity(flecs::world& world, std::size_t index, T comp) {
   flecs::entity event_entity = world.entity();
   event_entity.child_of(world.entity<window::MainWindow>());
-  event_entity.set<window::Event>({.index=index});
+  event_entity.set<window::EventOld>({.index=index});
   if constexpr (std::is_empty_v<T>) {
     event_entity.add<T>();
   } else {
@@ -345,7 +345,7 @@ void WindowClear(flecs::iter it, const MainWindowSFML* sfml_window) {
 
 
 } //namespace engine::window_backend_sfml::internal
-
+*/
 namespace engine {
   using namespace window_backend_sfml;
 
@@ -353,7 +353,9 @@ namespace engine {
     world.import<Window>();
     world.module<WindowBackendSfml>("window_backend_sfml");
 
-    world.system<const window::MainWindowInit>("system::InitSystem")
+    world.component<MainWindowSFML>();
+
+    /*world.system<const window::MainWindowInit>("system::InitSystem")
       .term_at(1).singleton()
       .iter(internal::InitSystem);
     
@@ -371,6 +373,6 @@ namespace engine {
     world.system<const MainWindowSFML>("system::WindowClear")
       .kind(flecs::PreStore)
       .term_at(1).singleton()
-      .iter(internal::WindowClear);
+      .iter(internal::WindowClear);*/
   }
 } //namespace engine::window_backend_sfml::internal

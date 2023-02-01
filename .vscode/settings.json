@@ -86,7 +86,8 @@
     "xtree": "cpp",
     "ranges": "cpp",
     "glad.h": "c",
-    "*.rh": "cpp"
+    "*.rh": "cpp",
+    "csignal": "cpp"
   },
   "cmake.debugConfig" : {
     "cwd": "${workspaceFolder}"

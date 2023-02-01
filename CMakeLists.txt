@@ -25,7 +25,7 @@ add_executable(main
   engine/modules/filesystem.cpp
   engine/modules/geometry.cpp
   engine/modules/glm-reflection.cpp
-  engine/modules/graphics-backend-sfml.cpp
+  #engine/modules/graphics-backend-sfml.cpp
   engine/modules/graphics.cpp
   engine/modules/transform.cpp
   engine/modules/window-backend-sfml.cpp
