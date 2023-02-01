@@ -4,6 +4,8 @@
 #include <flecs.h>
 
 #include "window/FrameEventsStorage.hpp"
+#include "window/Event.hpp"
+
 
 namespace engine {
   struct Window {

@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <flecs.h>
-#include <SFML/Graphics.hpp>
+#include <SFML/Window/WindowBase.hpp>
 
 namespace engine {
   struct WindowBackendSfml {
@@ -11,6 +11,6 @@ namespace engine {
 
 namespace engine::window_backend_sfml {
   struct MainWindowSFML {
-    std::shared_ptr<sf::RenderWindow> window;
+    std::shared_ptr<sf::WindowBase> window;
   };
 }

@@ -7,7 +7,7 @@
 
 namespace engine::window {
 
-  namespace event_type {
+  namespace event {
 
     struct Closed {};
 
@@ -74,7 +74,7 @@ namespace engine::window {
 class Event {
 public:
   template <class T>
-  inline Event(T event_type) noexcept(std::is_nothrow_convertible_v<VariantType>);
+  inline Event(T event_type) noexcept(std::is_nothrow_constructible_v<VariantType>);
 
   //Check is event has given type
   template <class T>
@@ -91,13 +91,13 @@ public:
 
 private:
   //internal
-  using VariantType = std::variant<event_type::Closed,             event_type::Resized, 
-                                   event_type::GainedFocus,        event_type::TextEntered,
-                                   event_type::KeyReleased,        event_type::MouseWheelScrolled,
-                                   event_type::MouseButtonPressed, event_type::MouseButtonReleased,
-                                   event_type::MouseMoved,         event_type::MouseEntered,
-                                   event_type::MouseLeft,          event_type::LostFocus,
-                                   event_type::KeyPressed>;
+  using VariantType = std::variant<event::Closed,             event::Resized, 
+                                   event::GainedFocus,        event::TextEntered,
+                                   event::KeyReleased,        event::MouseWheelScrolled,
+                                   event::MouseButtonPressed, event::MouseButtonReleased,
+                                   event::MouseMoved,         event::MouseEntered,
+                                   event::MouseLeft,          event::LostFocus,
+                                   event::KeyPressed>;
 
   VariantType event;
   bool discarded = false;
@@ -105,7 +105,7 @@ private:
 
 //inline methods
 template <class T>
-inline Event::Event(T event_type) noexcept(std::is_nothrow_convertible_v<VariantType>): event(event_type) {}
+inline Event::Event(T event_type) noexcept(std::is_nothrow_constructible_v<VariantType>): event(event_type) {}
 
 template <class T>
 inline bool Event::is_event() const noexcept {
