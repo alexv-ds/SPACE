@@ -78,7 +78,7 @@ public:
 
   //Check is event has given type
   template <class T>
-  inline bool is_event() const noexcept;
+  inline bool is() const noexcept;
 
   template <class T>
   inline const T& get() const;
@@ -108,7 +108,7 @@ template <class T>
 inline Event::Event(T event_type) noexcept(std::is_nothrow_constructible_v<VariantType>): event(event_type) {}
 
 template <class T>
-inline bool Event::is_event() const noexcept {
+inline bool Event::is() const noexcept {
   return std::holds_alternative<T>(this->event);
 }
 

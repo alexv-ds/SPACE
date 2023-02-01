@@ -1,26 +1,51 @@
+#include <type_traits>
+#include <spdlog/spdlog.h>
 #include "window.hpp"
 
 //#include "window/Event.hpp"
 
 namespace engine::window::detail {
 
-void CleanupEventStorage(flecs::iter it, MainWindow* window) {
+static void CleanupEventStorage(flecs::iter it, MainWindow* window) {
   window->events.clear();
 }
 
-/*
-void UpdateSize(flecs::iter it, const window::EventOld*, const window::event::Resized* resized) {
-  const window::event::Resized* last_event = resized + (*it.end() - 1);
-  MainWindow* window = it.world().get_mut<MainWindow>();
-  window->height = last_event->height;
-  window->width = last_event->width;
+static void ExitOnClosed(flecs::iter it, MainWindow* window) {
+  window->events.iterate([world = it.world()](const window::Event& event) {
+    if (event.is<window::event::Closed>()) {
+      SPDLOG_TRACE("Get close event");
+      world.quit();
+    }
+  });
 }
 
-int compare_event_index(flecs::entity_t e1, const window::EventOld* event1, flecs::entity_t e2, const window::EventOld* event2) {
-  return (event1->index > event2->index) - (event1->index < event2->index);
+static void HandleExitButton(flecs::iter it, MainWindow* window, const ExitButton* exit_button) {
+  if (exit_button->key == Key::Unknown && exit_button->scancode == Scancode::Unknown) {
+    return;
+  }
+  window->events.iterate([world = it.world(), exit_button](Event& event) {
+    if (!event.is<event::KeyPressed>()) {
+      return;
+    } 
+    const event::KeyPressed& event_data = event.get<event::KeyPressed>();
+    if (event_data.key != Key::Unknown && event_data.key == exit_button->key) {
+      using KeyUnderlying = std::underlying_type_t<decltype(event_data.key)>;
+      SPDLOG_TRACE("Close button pressed. Keycode: {}", static_cast<KeyUnderlying>(event_data.key));
+      event.discard();
+      world.quit();
+      return;
+    }
+    if (event_data.scancode != Scancode::Unknown && event_data.scancode == exit_button->scancode) {
+      using ScancodeUnderlying = std::underlying_type_t<decltype(event_data.scancode)>;
+      SPDLOG_TRACE("Close button pressed. Scancode: {}", static_cast<ScancodeUnderlying>(event_data.scancode));
+      event.discard();
+      world.quit();
+      return;
+    }
+  });
 }
-*/
-}; //namespace engine::window::detail
+
+}; //namespace engine::window::private
 
 
 namespace engine {
@@ -41,13 +66,36 @@ namespace engine {
 
     world.component<MainWindowInit>();
     world.component<MainWindow>();
+    world.component<ExitOnClosed>();
+    world.component<ExitButton>();
+
+    //phases
+    this->load_events_phase = world.entity("phase::load_events")
+      .add(flecs::Phase)
+      .depends_on(flecs::OnLoad);
+    
+    flecs::entity post_load_events_phase = world.entity("detail::phase::post_load_events")
+      .add(flecs::Phase)
+      .depends_on(this->load_events_phase);
+  
 
     //systems
     world.system<MainWindow>("system::CleanupEventStorage")
-      .kind(flecs::PreUpdate)
+      .kind(flecs::PostUpdate)
       .arg(1).singleton()
       .iter(detail::CleanupEventStorage);
+    
+    world.system<MainWindow>("system::ExitOnClosed")
+      .kind(post_load_events_phase)
+      .arg(1).singleton()
+      .with<ExitOnClosed>().singleton()
+      .iter(detail::ExitOnClosed);
 
+    world.system<MainWindow, const ExitButton>("system::HandleExitButton")
+      .kind(post_load_events_phase)
+      .arg(1).singleton()
+      .arg(2).singleton()
+      .iter(detail::HandleExitButton);
   };
 }
 

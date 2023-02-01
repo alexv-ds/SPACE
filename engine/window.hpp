@@ -9,6 +9,8 @@
 
 namespace engine {
   struct Window {
+    flecs::entity load_events_phase;
+
     Window(flecs::world&);
   };
 } //namespace engine
@@ -36,6 +38,14 @@ namespace engine::window {
     std::uint32_t width;
     std::uint32_t height;
     FrameEventsStorage events;
+  };
+
+  struct OnResize {};
+
+  struct ExitOnClosed {};
+  struct ExitButton {
+    Key key = Key::Unknown;
+    Scancode scancode = Scancode::Unknown;
   };
 
 } //namespace engine::window

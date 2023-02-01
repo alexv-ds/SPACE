@@ -34,7 +34,6 @@ private:
 
 KeyMapping::KeyMapping():
     keys_sfml_to_engine(sf::Keyboard::KeyCount, window::Key::Unknown),
-    //преобразуем sf::Keyboard::Scancode::ScancodeCount в число, которым представлено enum sf::Keyboard::Scancode
     scancodes_sfml_to_engine(static_cast<ScancodeUnderlying>(sf::Keyboard::Scancode::ScancodeCount), window::Scancode::Unknown),
     mousebuttons_sfml_to_engine(sf::Mouse::ButtonCount, window::MouseButton::Unknown)
 {
@@ -298,39 +297,37 @@ KeyMapping::KeyMapping():
 }
 
 /////////////////////////////////////
-/////////////SYSTEMS/////////////////
+/////////////OTHER STUFF/////////////
 /////////////////////////////////////
 
-void InitSystem(flecs::iter it, const window::MainWindowInit* initdata) {
-  sf::VideoMode video_mode({initdata->width, initdata->height});
-
-  static_assert(sf::Style::Close == static_cast<std::uint32_t>(window::Style::Close));
-  static_assert(sf::Style::Default == static_cast<std::uint32_t>(window::Style::Default));
-  static_assert(sf::Style::Fullscreen == static_cast<std::uint32_t>(window::Style::Fullscreen));
-  static_assert(sf::Style::None == static_cast<std::uint32_t>(window::Style::None));
-  static_assert(sf::Style::Resize == static_cast<std::uint32_t>(window::Style::Resize));
-  static_assert(sf::Style::Titlebar == static_cast<std::uint32_t>(window::Style::Titlebar));
-  std::uint32_t style = static_cast<std::uint32_t>(initdata->style);
-
-  std::shared_ptr window = std::make_shared<sf::WindowBase>(video_mode, initdata->title, style);
-
-  it.world().set<window::MainWindow>({
-    .width = initdata->width,
-    .height = initdata->height
-  });
-  it.world().set<MainWindowSFML>({.window = std::move(window)});
-  it.world().remove<window::MainWindowInit>();
-}
-
-window::Key key_sfml2engine(const KeyMapping& mapping, const sf::Keyboard::Key key) {
-  if (std::size_t key_idx = static_cast<std::size_t>(key); mapping.keys_sfml_to_engine.size() > key_idx) {
+static window::Key key_sfml2engine(const KeyMapping& mapping, const sf::Keyboard::Key key) {
+  if (std::size_t key_idx = static_cast<std::size_t>(key); mapping.keys_sfml_to_engine.size() > key_idx) [[likely]] {
     return mapping.keys_sfml_to_engine[key_idx];
-  } else {
+  } else [[unlikely]] {
     SPDLOG_WARN("Unknown key code. Condition not met: keys_sfml_to_engine.size() > key_idx");
+    return window::Key::Unknown;
   }
 }
 
-void push_event(window::FrameEventsStorage& storage, const sf::Event& event) {
+static window::Scancode scancode_sfml2engine(const KeyMapping& mapping, const sf::Keyboard::Scancode scancode) {
+  if (std::size_t scancode_idx = static_cast<std::size_t>(scancode); mapping.scancodes_sfml_to_engine.size() > scancode_idx) [[likely]] {
+    return mapping.scancodes_sfml_to_engine[scancode_idx];
+  } else [[unlikely]] {
+    SPDLOG_WARN("Unkcown scancode. Condition not met: scancodes_sfml_to_engine.size() > scancode_idx");
+    return window::Scancode::Unknown;
+  }
+}
+
+static window::MouseButton mousebutton_sfml2engine(const KeyMapping& mapping, const sf::Mouse::Button button) {
+  if (std::size_t button_idx = static_cast<std::size_t>(button); mapping.mousebuttons_sfml_to_engine.size() > button_idx) [[likely]] {
+    return mapping.mousebuttons_sfml_to_engine[button_idx];
+  } else [[unlikely]] {
+    SPDLOG_WARN("Unkcown mouse button. Condition not met: mousebuttons_sfml_to_engine.size() > button_idx");
+    return window::MouseButton::Unknown;
+  }
+}
+
+static void push_event(window::FrameEventsStorage& storage, const sf::Event& event) {
   switch (event.type) {
     case sf::Event::Closed: {
       storage.push<window::event::Closed>();
@@ -358,179 +355,101 @@ void push_event(window::FrameEventsStorage& storage, const sf::Event& event) {
       break;
     }
     case sf::Event::KeyPressed: {
-      window::Key key = window::Key::Unknown;
-      window::Scancode scancode = window::Scancode::Unknown;
-      const KeyMapping& mapping = KeyMapping::get();
-
-
-
-      if (std::size_t scancode_idx = static_cast<std::size_t>(event.key.scancode); mapping.scancodes_sfml_to_engine.size() > scancode_idx) {
-        scancode = mapping.scancodes_sfml_to_engine[scancode_idx];
-      } else {
-        SPDLOG_WARN("Unkcown scancode. Condition not met: scancodes_sfml_to_engine.size() > scancode_idx");
-      }
-
-
-
       storage.push<window::event::KeyPressed>({
-        //.key
+        .key = key_sfml2engine(KeyMapping::get(), event.key.code),
+        .scancode = scancode_sfml2engine(KeyMapping::get(), event.key.scancode),
+        .alt = event.key.alt,
+        .control = event.key.control,
+        .shift = event.key.shift,
+        .system = event.key.system
       });
       break;
     }
-    case sf::Event::: {
-      storage.push<window::event::>();
+    case sf::Event::KeyReleased: {
+      storage.push<window::event::KeyReleased>({
+        .key = key_sfml2engine(KeyMapping::get(), event.key.code),
+        .scancode = scancode_sfml2engine(KeyMapping::get(), event.key.scancode),
+        .alt = event.key.alt,
+        .control = event.key.control,
+        .shift = event.key.shift,
+        .system = event.key.system
+      });
       break;
     }
-    case sf::Event::: {
-      storage.push<window::event::>();
+    case sf::Event::MouseWheelScrolled: {
+      storage.push<window::event::MouseWheelScrolled>({
+        .wheel = event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel ?
+                                                  window::MouseWheel::Vertical : window::MouseWheel::Horizontal,
+        .delta = event.mouseWheelScroll.delta,
+        .x = event.mouseWheelScroll.x,
+        .y = event.mouseWheelScroll.y
+      });
       break;
     }
-    case sf::Event::: {
-      storage.push<window::event::>();
+    case sf::Event::MouseButtonPressed: {
+      storage.push<window::event::MouseButtonPressed>({
+        .button = mousebutton_sfml2engine(KeyMapping::get(), event.mouseButton.button),
+        .x = event.mouseButton.x,
+        .y = event.mouseButton.y
+      });
       break;
     }
-    case sf::Event::: {
-      storage.push<window::event::>();
+    case sf::Event::MouseButtonReleased: {
+      storage.push<window::event::MouseButtonReleased>({
+        .button = mousebutton_sfml2engine(KeyMapping::get(), event.mouseButton.button),
+        .x = event.mouseButton.x,
+        .y = event.mouseButton.y
+      });
       break;
     }
-    case sf::Event::: {
-      storage.push<window::event::>();
+    case sf::Event::MouseMoved: {
+      storage.push<window::event::MouseMoved>({
+        .x = event.mouseMove.x,
+        .y = event.mouseMove.y
+      });
       break;
     }
-    case sf::Event::: {
-      storage.push<window::event::>();
+    case sf::Event::MouseEntered: {
+      storage.push<window::event::MouseEntered>();
       break;
     }
-    case sf::Event::: {
-      storage.push<window::event::>();
+    case sf::Event::MouseLeft: {
+      storage.push<window::event::MouseLeft>();
       break;
     }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
-    case sf::Event::: {
-      storage.push<window::event::>();
-      break;
-    }
+  } //end of switch
+}
 
-  }
+/////////////////////////////////////
+/////////////SYSTEMS/////////////////
+/////////////////////////////////////
 
+static void InitSystem(flecs::iter it, const window::MainWindowInit* initdata) {
+  sf::VideoMode video_mode({initdata->width, initdata->height});
+
+  static_assert(sf::Style::Close == static_cast<std::uint32_t>(window::Style::Close));
+  static_assert(sf::Style::Default == static_cast<std::uint32_t>(window::Style::Default));
+  static_assert(sf::Style::Fullscreen == static_cast<std::uint32_t>(window::Style::Fullscreen));
+  static_assert(sf::Style::None == static_cast<std::uint32_t>(window::Style::None));
+  static_assert(sf::Style::Resize == static_cast<std::uint32_t>(window::Style::Resize));
+  static_assert(sf::Style::Titlebar == static_cast<std::uint32_t>(window::Style::Titlebar));
+  std::uint32_t style = static_cast<std::uint32_t>(initdata->style);
+
+  std::shared_ptr window = std::make_shared<sf::WindowBase>(video_mode, initdata->title, style);
+
+  it.world().set<window::MainWindow>({
+    .width = initdata->width,
+    .height = initdata->height
+  });
+  it.world().set<MainWindowSFML>({.window = std::move(window)});
+  it.world().remove<window::MainWindowInit>();
 }
 
 //Довольно странно если за один кадр будет больше 20 ивентов
 //Мб, отключена система очистки?
 #define SFML_BACKEND___STORAGE_SUSPICIOUS_SIZE 20
 
-void PollEvents(flecs::iter it, window::MainWindow* window, const MainWindowSFML* sfml_window) {
+static void PollEvents(flecs::iter it, window::MainWindow* window, const MainWindowSFML* sfml_window) {
   assert(sfml_window->window != nullptr);
   sf::Event event;
   while(sfml_window->window->pollEvent(event)) {
@@ -553,26 +472,28 @@ namespace engine {
     world.import<Window>();
     world.module<WindowBackendSfml>("window_backend_sfml");
 
+    //components
     world.component<MainWindowSFML>();
 
+    //phases
+    flecs::entity load_events_phase;
+    {
+      const ::engine::Window* window_module = world.get<::engine::Window>();
+      assert(window_module);
+      load_events_phase = window_module->load_events_phase;
+    }
+
+
+    //systems
     world.system<const window::MainWindowInit>("system::InitSystem")
       .term_at(1).singleton()
       .iter(detail::InitSystem);
     
     world.system<window::MainWindow, const MainWindowSFML>("system::EventPoll")
-      .kind(flecs::OnLoad)
+      .kind(load_events_phase)
       .term_at(1).singleton()
       .term_at(2).singleton()
       .iter(detail::PollEvents);
-    
-    /*world.system<const MainWindowSFML>("system::WindowDisplay")
-      .kind(flecs::PostFrame)
-      .term_at(1).singleton()
-      .iter(internal::WindowDisplay);
-    
-    world.system<const MainWindowSFML>("system::WindowClear")
-      .kind(flecs::PreStore)
-      .term_at(1).singleton()
-      .iter(internal::WindowClear);*/
+
   }
 } //namespace engine::window_backend_sfml::internal

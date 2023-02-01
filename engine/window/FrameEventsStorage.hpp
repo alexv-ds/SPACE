@@ -16,10 +16,10 @@ public:
   inline void clear();
   
   template <class T>
-  void iterate(T cb_func) const;
+  void iterate(T cb_func);
 
   template <class T>
-  void iterate_all(T cb_func) const;
+  void iterate_all(T cb_func);
 
   inline std::size_t raw_size() const noexcept;
 private:
@@ -42,7 +42,7 @@ inline void FrameEventsStorage::clear() {
 }
 
 template <class T>
-inline void FrameEventsStorage::iterate(T cb_func) const {
+inline void FrameEventsStorage::iterate(T cb_func) {
   for (Event& event : this->events) {
     if (!event.is_discarded()) {
       cb_func(event);
@@ -51,7 +51,7 @@ inline void FrameEventsStorage::iterate(T cb_func) const {
 }
 
 template <class T>
-void FrameEventsStorage::iterate_all(T cb_func) const {
+void FrameEventsStorage::iterate_all(T cb_func) {
   for (Event& event : this->events) {
     cb_func(event);
   }
