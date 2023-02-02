@@ -6,6 +6,9 @@
 namespace engine {
   struct WindowBackendSfml {
     WindowBackendSfml(flecs::world&);
+
+    //internal data
+    float suspicious_size_msg_delay = 0; 
   };
 }
 

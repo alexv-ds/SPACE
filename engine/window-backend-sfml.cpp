@@ -448,8 +448,13 @@ static void InitSystem(flecs::iter it, const window::MainWindowInit* initdata) {
 //Довольно странно если за один кадр будет больше 20 ивентов
 //Мб, отключена система очистки?
 #define SFML_BACKEND___STORAGE_SUSPICIOUS_SIZE 20
+#define SFML_BACKEND___REPORT_DELAY 3 //in secs
 
-static void PollEvents(flecs::iter it, window::MainWindow* window, const MainWindowSFML* sfml_window) {
+static void PollEvents(flecs::iter it,
+                      window::MainWindow* window,
+                      const MainWindowSFML* sfml_window,
+                      WindowBackendSfml* module)
+{
   assert(sfml_window->window != nullptr);
   sf::Event event;
   while(sfml_window->window->pollEvent(event)) {
@@ -457,10 +462,15 @@ static void PollEvents(flecs::iter it, window::MainWindow* window, const MainWin
   }
 
   if (window->events.raw_size() > SFML_BACKEND___STORAGE_SUSPICIOUS_SIZE) {
-    SPDLOG_WARN("Events Storage has suspicious size: {}", window->events.raw_size());
+    module->suspicious_size_msg_delay -= it.delta_system_time();
+    if (module->suspicious_size_msg_delay <= 0) {
+      module->suspicious_size_msg_delay = SFML_BACKEND___REPORT_DELAY;
+      SPDLOG_WARN("Events Storage has suspicious size: {}", window->events.raw_size());
+    }
   }
 }
 
+#undef SFML_BACKEND___REPORT_DELAY
 #undef SFML_BACKEND___STORAGE_SUSPICIOUS_SIZE
 
 } //namespace engine::window_backend_sfml::detail
@@ -489,10 +499,11 @@ namespace engine {
       .term_at(1).singleton()
       .iter(detail::InitSystem);
     
-    world.system<window::MainWindow, const MainWindowSFML>("system::EventPoll")
+    world.system<window::MainWindow, const MainWindowSFML, WindowBackendSfml>("system::EventPoll")
       .kind(load_events_phase)
       .term_at(1).singleton()
       .term_at(2).singleton()
+      .term_at(3).singleton()
       .iter(detail::PollEvents);
 
   }
