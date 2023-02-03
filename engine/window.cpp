@@ -53,12 +53,6 @@ static void UpdateSize(flecs::iter it, MainWindow* window) {
   });
 }
 
-//serialisers
-int std_string_ser(const flecs::serializer* s, const std::string* data) {
-  const char *str = data->c_str();
-  return s->value(flecs::String, &str); // Serializer-specific string serialization
-}
-
 }; //namespace engine::window::private
 
 
@@ -79,18 +73,8 @@ namespace engine {
       .bit("Fullscreen", static_cast<std::uint32_t>(Style::Fullscreen));
       //.bit("Default", static_cast<std::uint32_t>(Style::Default));
 
-    world.component<std::string>("reflection::std_string")
-      .serialize(flecs::String, detail::std_string_ser);
-
     //components
-
-    world.component<MainWindowInit>()
-      .member<decltype(MainWindowInit::width)>("width")
-      .member<decltype(MainWindowInit::height)>("height")
-      .member<decltype(MainWindowInit::title)>("title")
-      .member<decltype(MainWindowInit::style)>("style");
-      
-
+    world.component<MainWindowInit>();
     world.component<MainWindow>();
     world.component<ExitOnClosed>();
     world.component<ExitButton>();
