@@ -15,8 +15,8 @@ int main(int argc, char const *argv[]) {
   world.set_threads(2);
   world.import<flecs::monitor>();
   world.import<Window>();
-  //world.import<WindowBackendSfml>();
-  //world.import<Bgfx>();
+  world.import<WindowBackendSfml>();
+  world.import<Bgfx>();
 
   world.add<window::MainWindowInit>();
   world.add<window::ExitOnClosed>();

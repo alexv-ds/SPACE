@@ -14,15 +14,19 @@ namespace engine::bgfx::detail {
 static std::shared_ptr<BgfxLock> bgfx_init(std::shared_ptr<sf::WindowBase> window) {
   SPDLOG_TRACE("BGFX INIT");
   ::bgfx::Init init;
-  init.platformData.ndt = window->getSystemHandle();
+  init.type = ::bgfx::RendererType::Direct3D11;
+  init.platformData.nwh = window->getSystemHandle();
   init.resolution.width = window->getSize().x;
   init.resolution.height = window->getSize().y;
+  //init.resolution.reset  = BGFX_RESET_VSYNC;
   
   bool init_ok = ::bgfx::init(init);
-
   assert(init_ok);
 
+  ::bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
+  ::bgfx::setViewClear(0, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH, 0x505050ff, 1.0f, 0);
 
+  SPDLOG_TRACE("BGFX INITED");
   return std::make_shared<BgfxLock>(window);
 }
 
@@ -34,18 +38,23 @@ static void InitSystem(flecs::iter it, const window_backend_sfml::MainWindowSFML
   assert(sfml_main_window->window);
   SPDLOG_INFO("BOP");
   it.world().set<BgfxContext>({.lock = bgfx_init(sfml_main_window->window)});
-
-  ::bgfx::setViewClear(0, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH, 0xff3030ff, 1.0f, 0);
-  //::bgfx::Caps
 }
 
-static void BgfxFrameBegin(flecs::iter it, const window::MainWindow* window) {
+static void BgfxFrameBegin(flecs::iter it, window::MainWindow* window) {
+  window->events.iterate([](const window::Event& event) {
+    if (event.is<window::event::Resized>()) {
+      const window::event::Resized& resize_event = event.get<window::event::Resized>();
+      SPDLOG_INFO("ON RESIZE");
+      ::bgfx::reset(resize_event.width, resize_event.height, BGFX_RESET_VSYNC);
+    }
+  });
+
   ::bgfx::setViewRect(0,0,0,window->width,window->height);
-  ::bgfx::touch(0);
+
 }
 
 static void BgfxFrameEnd(flecs::iter it) {
-  SPDLOG_INFO("BOOOOP");
+  ::bgfx::touch(0);
   ::bgfx::frame();
 }
 
@@ -66,12 +75,15 @@ engine::Bgfx::Bgfx(flecs::world& world) {
     .without<BgfxContext>().singleton()
     .iter(detail::InitSystem);
 
-  world.system<const window::MainWindow>("system::BgfxFrameBegin")
+  world.system<window::MainWindow>("system::BgfxFrameBegin")
     .kind(flecs::PreStore)
     .arg(1).singleton()
+    .with<BgfxContext>().singleton()
     .iter(detail::BgfxFrameBegin);
 
   world.system("system::BgfxFrameEnd")
     .kind(flecs::PostFrame)
+    .with<BgfxContext>().singleton()
     .iter(detail::BgfxFrameEnd);
+
 }
