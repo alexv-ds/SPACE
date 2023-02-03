@@ -91,7 +91,7 @@ namespace engine {
 
     //systems
     world.system<MainWindow>("system::CleanupEventStorage")
-      .kind(flecs::PostUpdate)
+      .kind(flecs::PostFrame)
       .arg(1).singleton()
       .iter(detail::CleanupEventStorage);
 
