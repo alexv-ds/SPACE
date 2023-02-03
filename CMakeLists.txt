@@ -16,6 +16,7 @@ find_package(SFML REQUIRED)
 find_package(FLECS REQUIRED)
 find_package(SPDLOG REQUIRED)
 find_package(GLM REQUIRED)
+find_package(BGFX REQUIRED)
 
 add_executable(main
   engine/engine/main.cpp
@@ -30,6 +31,9 @@ add_executable(main
   engine/transform.cpp
   engine/window-backend-sfml.cpp
   engine/window.cpp
+  #engine/graphics-backend-bgfx.cpp
+  engine/bgfx.cpp
+  engine/bgfx/BgfxLock.cpp
 )
 
 target_link_libraries(main PRIVATE
@@ -37,6 +41,7 @@ target_link_libraries(main PRIVATE
   flecs::flecs_static
   spdlog::spdlog
   glm_libs
+  bgfx
 )
 
 add_executable(game

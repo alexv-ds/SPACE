@@ -2,8 +2,6 @@
 #include <spdlog/spdlog.h>
 #include "window.hpp"
 
-//#include "window/Event.hpp"
-
 namespace engine::window::detail {
 
 static void CleanupEventStorage(flecs::iter it, MainWindow* window) {
@@ -45,6 +43,22 @@ static void HandleExitButton(flecs::iter it, MainWindow* window, const ExitButto
   });
 }
 
+static void UpdateSize(flecs::iter it, MainWindow* window) {
+  window->events.iterate([window](const Event& event) {
+    if (event.is<event::Resized>()) {
+      const auto& resize_event = event.get<event::Resized>();
+      window->height = resize_event.height;
+      window->width = resize_event.width;
+    }
+  });
+}
+
+//serialisers
+int std_string_ser(const flecs::serializer* s, const std::string* data) {
+  const char *str = data->c_str();
+  return s->value(flecs::String, &str); // Serializer-specific string serialization
+}
+
 }; //namespace engine::window::private
 
 
@@ -55,16 +69,28 @@ namespace engine {
     world.import<flecs::units>();
     world.module<Window>("window");
 
+    //reflection
     static_assert(std::is_same_v<std::underlying_type_t<Style>, std::uint32_t>);
-    world.component<Style>("Style")
-      .bit("None", static_cast<std::uint32_t>(Style::None))
+    world.component<Style>("reflection::Style")
+      //.bit("None", static_cast<std::uint32_t>(Style::None))
       .bit("Titlebar", static_cast<std::uint32_t>(Style::Titlebar))
       .bit("Resize", static_cast<std::uint32_t>(Style::Resize))
       .bit("Close", static_cast<std::uint32_t>(Style::Close))
-      .bit("Fullscreen", static_cast<std::uint32_t>(Style::Fullscreen))
-      .bit("Default", static_cast<std::uint32_t>(Style::Default));
+      .bit("Fullscreen", static_cast<std::uint32_t>(Style::Fullscreen));
+      //.bit("Default", static_cast<std::uint32_t>(Style::Default));
 
-    world.component<MainWindowInit>();
+    world.component<std::string>("reflection::std_string")
+      .serialize(flecs::String, detail::std_string_ser);
+
+    //components
+
+    world.component<MainWindowInit>()
+      .member<decltype(MainWindowInit::width)>("width")
+      .member<decltype(MainWindowInit::height)>("height")
+      .member<decltype(MainWindowInit::title)>("title")
+      .member<decltype(MainWindowInit::style)>("style");
+      
+
     world.component<MainWindow>();
     world.component<ExitOnClosed>();
     world.component<ExitButton>();
@@ -84,6 +110,11 @@ namespace engine {
       .kind(flecs::PostUpdate)
       .arg(1).singleton()
       .iter(detail::CleanupEventStorage);
+
+    world.system<MainWindow>("system::UpdateSize")
+      .kind(post_load_events_phase)
+      .arg(1).singleton()
+      .iter(detail::UpdateSize);
     
     world.system<MainWindow>("system::ExitOnClosed")
       .kind(post_load_events_phase)

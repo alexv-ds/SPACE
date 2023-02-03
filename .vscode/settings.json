@@ -87,7 +87,8 @@
     "ranges": "cpp",
     "glad.h": "c",
     "*.rh": "cpp",
-    "csignal": "cpp"
+    "csignal": "cpp",
+    "cfenv": "cpp"
   },
   "cmake.debugConfig" : {
     "cwd": "${workspaceFolder}"
