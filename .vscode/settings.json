@@ -88,7 +88,9 @@
     "glad.h": "c",
     "*.rh": "cpp",
     "csignal": "cpp",
-    "cfenv": "cpp"
+    "cfenv": "cpp",
+    "coroutine": "cpp",
+    "resumable": "cpp"
   },
   "cmake.debugConfig" : {
     "cwd": "${workspaceFolder}"
