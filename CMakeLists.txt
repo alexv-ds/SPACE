@@ -21,6 +21,7 @@ find_package(BGFX REQUIRED)
 add_executable(main
   engine/engine/main.cpp
   engine/engine/setup_spdlog.cpp
+  engine/engine/flecs_helpers.cpp
 
   engine/filesystem-backend-stdlib.cpp
   engine/filesystem.cpp
@@ -34,6 +35,7 @@ add_executable(main
   #engine/graphics-backend-bgfx.cpp
   engine/bgfx.cpp
   engine/bgfx/BgfxLock.cpp
+  engine/config.cpp
 )
 
 target_link_libraries(main PRIVATE
