@@ -47,6 +47,13 @@ void create_var_listener(flecs::world& world,
                          const std::string_view listener_name,
                          ChangeListener::CbType&& onchange_cb);
 
+inline void create_var_listener(flecs::world& world,
+                         const std::string_view entity_name,
+                         ChangeListener::CbType&& onchange_cb)
+{
+  create_var_listener(world, entity_name, entity_name, std::move(onchange_cb));
+}
+
 /*template <class T>
 using TypedChangeLisneterCb = std::function<void (flecs::world&, const T&)>;
 
