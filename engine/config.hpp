@@ -14,9 +14,18 @@ struct Config {
 } //namespace engine
 
 namespace engine::config {
-  //добавим в тип варианта для того, что бы meta модуль flecs не считал 
-  //за один тип наш VariantType и такой же std::varint<string, int32, float>
-  namespace detail { struct VariantUniqueTag {};}
+
+  namespace detail {
+    //добавим в тип варианта для того, что бы meta модуль flecs не считал 
+    //за один тип наш VariantType и такой же std::varint<string, int32, float>
+    struct VariantUniqueTag {
+      //Для сравнений
+      inline operator bool() const noexcept {
+        return true;
+      }
+    };
+    
+  }
 
 //При добавлении нового типа соответствующе обновить stored_typename()
 
@@ -37,6 +46,24 @@ void create_var_listener(flecs::world& world,
                          const std::string_view var_name,
                          const std::string_view listener_name,
                          ChangeListener::CbType&& onchange_cb);
+
+/*template <class T>
+using TypedChangeLisneterCb = std::function<void (flecs::world&, const T&)>;
+
+void create_var_listener(flecs::world& world,
+                         const std::string_view var_name,
+                         const std::string_view listener_name,
+                         TypedChangeLisneterCb<std::string>&& onchange_cb);
+
+void create_var_listener(flecs::world& world,
+                         const std::string_view var_name,
+                         const std::string_view listener_name,
+                         TypedChangeLisneterCb<std::int32_t>&& onchange_cb);
+
+void create_var_listener(flecs::world& world,
+                         const std::string_view var_name,
+                         const std::string_view listener_name,
+                         TypedChangeLisneterCb<float>&& onchange_cb);*/
 
 void create_var(flecs::world& world, const std::string_view name, VariantType&& data);
 void update_var(flecs::world& world, const std::string_view name, VariantType&& data);

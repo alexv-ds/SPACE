@@ -75,8 +75,10 @@ namespace engine::config {
     //Если на сущности есть Var, то значит она была инициализирована
     //и компонент UnitialisedVar не используется
     if (Var* var = entity.get_ref<Var>().get(); var) {
-      //check stored types
-      if (data.index() == var->data.index()) {
+      //Проверяем хранящиеся типы, сделать это можно по индексам
+      //Так же проверяем на равенство, нам незачем делать пустую работу
+      //если оно и так равно
+      if (data.index() == var->data.index()  && var->data != data) {
         var->data = std::move(data);
         entity.add<Changed>();
       } else {
@@ -103,7 +105,19 @@ namespace engine::config {
     if (const Var* var = var_entity.get<Var>(); var && !var_entity.has<Changed>()) {
       onchange_cb(world, var->data);
     }
-    listener_entity.set<ChangeListener>(var_entity, {.cb = std::move(onchange_cb)});
+
+    //Если Сущность представляющая переменную и слушатель является одной сущностью
+    //то вешаем на нее не отношение, а непосредственно компонентн
+    //Потому что не может быть отношений на саму себя из-за флага flecs::Acyclic
+    //у ChangeListener
+    if (var_entity.id() == listener_entity.id()) {
+      listener_entity.set<ChangeListener>({.cb = std::move(onchange_cb)});
+    } else {
+      listener_entity.set<ChangeListener>(var_entity, {.cb = std::move(onchange_cb)});
+    }
+
+
+    std::printf("testme");
   }
 
 } //namespace engine::config
@@ -134,8 +148,13 @@ engine::Config::Config(flecs::world& world) {
   world.system<const Var, const ChangeListener>("system::ExecuteUpdateCallbacks")
     .kind(flecs::PostFrame)
     .arg(1).up<ChangeListener>()
-    .with<Changed>().up<ChangeListener>()
     .arg(2).second(flecs::Wildcard)
+    .with<Changed>().up<ChangeListener>()
+    .iter(detail::ExecuteUpdateCallbacks);
+  
+  world.system<const Var, const ChangeListener>("system::ExecuteUpdateCallback_SelfListeners")
+    .kind(flecs::PostFrame)
+    .with<Changed>()
     .iter(detail::ExecuteUpdateCallbacks);
 
   world.system("system::PostFrameCleanup")
