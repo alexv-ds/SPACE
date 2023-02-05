@@ -54,27 +54,39 @@ inline void create_var_listener(flecs::world& world,
   create_var_listener(world, entity_name, entity_name, std::move(onchange_cb));
 }
 
-/*template <class T>
+template <class T>
 using TypedChangeLisneterCb = std::function<void (flecs::world&, const T&)>;
 
-void create_var_listener(flecs::world& world,
+void create_typed_var_listener(flecs::world& world,
                          const std::string_view var_name,
                          const std::string_view listener_name,
                          TypedChangeLisneterCb<std::string>&& onchange_cb);
 
-void create_var_listener(flecs::world& world,
+void create_typed_var_listener(flecs::world& world,
                          const std::string_view var_name,
                          const std::string_view listener_name,
                          TypedChangeLisneterCb<std::int32_t>&& onchange_cb);
 
-void create_var_listener(flecs::world& world,
+void create_typed_var_listener(flecs::world& world,
                          const std::string_view var_name,
                          const std::string_view listener_name,
-                         TypedChangeLisneterCb<float>&& onchange_cb);*/
+                         TypedChangeLisneterCb<float>&& onchange_cb);
 
 void create_var(flecs::world& world, const std::string_view name, VariantType&& data);
 void update_var(flecs::world& world, const std::string_view name, VariantType&& data);
 //return nullptr if var not exits
 const VariantType* get_var(flecs::world& world, const std::string_view name);
+
+template<class T>
+inline const T* get_var(flecs::world& world, const std::string_view name) {
+  const VariantType* data = get_var(world, name);
+  if (!data) {
+    return nullptr;
+  }
+  if (const T* value = std::get_if<T>(data); value) {
+    return value;
+  }
+  return nullptr;
+}
 
 } //namespace engine::config
