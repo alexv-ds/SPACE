@@ -90,7 +90,8 @@
     "csignal": "cpp",
     "cfenv": "cpp",
     "coroutine": "cpp",
-    "resumable": "cpp"
+    "resumable": "cpp",
+    "string_view": "cpp"
   },
   "cmake.debugConfig" : {
     "cwd": "${workspaceFolder}"
