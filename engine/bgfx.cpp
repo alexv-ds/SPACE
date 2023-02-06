@@ -90,12 +90,11 @@ static void BgfxFrameBegin(flecs::iter it, window::MainWindow* window) {
       ::bgfx::reset(resize_event.width, resize_event.height, reset_flags);
     }
   });
-
   ::bgfx::setViewRect(0,0,0,window->width,window->height);
+  ::bgfx::touch(0);
 }
 
 static void BgfxFrameEnd(flecs::iter it) {
-  ::bgfx::touch(0);
   ::bgfx::frame();
 }
 
@@ -121,6 +120,7 @@ static void UpdateDebugFlagsSystem(flecs::iter it) {
     flags |= BGFX_DEBUG_STATS;
   }
   if (detail::is_cvar_enabled(world, cvar::debug_text)) {
+    SPDLOG_CRITICAL("NBOOOOOOOOOOOOOOOOOOOP");
     flags |= BGFX_DEBUG_TEXT;
   }
   if (detail::is_cvar_enabled(world, cvar::debug_profiler)) {
