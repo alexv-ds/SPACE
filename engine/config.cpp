@@ -31,6 +31,21 @@ namespace engine::config {
       it.world().remove_all<Changed>();
     }
 
+  void print_error_report(const std::string_view expected_type,
+                          const VariantType& variant,
+                          const std::string_view var_name,
+                          const std::string_view listener_name,
+                          flecs::world& world)
+  {
+    SPDLOG_ERROR("Cannot handle onchange cvar callback. "
+                 "Expected '{}' value type, but geted '{}'. "
+                 "Var Entity: '{}', Listener Entity: '{}'",
+                 expected_type,
+                 stored_typename(variant),
+                 entity_by_stringview(world, var_name).path("::", ""),
+                 entity_by_stringview(world, listener_name).path("::", ""));
+  }
+
   } //namespace detail;
 
   std::string_view stored_typename(const VariantType& data) noexcept {
@@ -132,72 +147,6 @@ namespace engine::config {
     }
     return nullptr;
   }
-
-  void print_error_report(const std::string_view expected_type,
-                          const VariantType& variant,
-                          const std::string_view var_name,
-                          const std::string_view listener_name,
-                          flecs::world& world)
-  {
-    SPDLOG_ERROR("Cannot handle onchange cvar callback. "
-                 "Expected 'string' value type, but geted '{}'. "
-                 "Var Entity: {}, Listener Entity: {}",
-                 stored_typename(variant),
-                 entity_by_stringview(world, var_name).path("::", ""),
-                 entity_by_stringview(world, listener_name).path("::", ""));
-  }
-
-  void create_typed_var_listener(flecs::world& world,
-                          const std::string_view var_name,
-                          const std::string_view listener_name,
-                          TypedChangeLisneterCb<std::string>&& onchange_cb)
-  {
-    ChangeListener::CbType cb = [typed_cb = std::move(onchange_cb), var_name, listener_name]
-                                (flecs::world& world, const VariantType& variant)
-    {
-      if (const std::string* value = std::get_if<std::string>(&variant); value) {
-        typed_cb(world, *value);
-      } else {
-        print_error_report("string"sv, variant, var_name, listener_name, world);
-      }
-    };
-    create_var_listener(world, var_name, listener_name, std::move(cb));
-  }
-
-  void create_typed_var_listener(flecs::world& world,
-                          const std::string_view var_name,
-                          const std::string_view listener_name,
-                          TypedChangeLisneterCb<std::int32_t>&& onchange_cb)
-  {
-    ChangeListener::CbType cb = [typed_cb = std::move(onchange_cb), var_name, listener_name]
-                                (flecs::world& world, const VariantType& variant)
-    {
-      if (const std::int32_t* value = std::get_if<std::int32_t>(&variant); value) {
-        typed_cb(world, *value);
-      } else {
-        print_error_report("int32"sv, variant, var_name, listener_name, world);
-      }
-    };
-    create_var_listener(world, var_name, listener_name, std::move(cb));
-  }
-
-  void create_typed_var_listener(flecs::world& world,
-                          const std::string_view var_name,
-                          const std::string_view listener_name,
-                          TypedChangeLisneterCb<float>&& onchange_cb)
-  {
-    ChangeListener::CbType cb = [typed_cb = std::move(onchange_cb), var_name, listener_name]
-                                (flecs::world& world, const VariantType& variant)
-    {
-      if (const float* value = std::get_if<float>(&variant); value) {
-        typed_cb(world, *value);
-      } else {
-        print_error_report("float"sv, variant, var_name, listener_name, world);
-      }
-    };
-    create_var_listener(world, var_name, listener_name, std::move(cb));
-  }
-
 } //namespace engine::config
 
 engine::Config::Config(flecs::world& world) {

@@ -10,7 +10,8 @@ namespace engine {
 struct Bgfx {
   Bgfx(flecs::world&);
 
-  //internal
+  //internal data
+
   std::uint32_t reset_flags;
 };
 

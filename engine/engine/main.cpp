@@ -27,21 +27,21 @@ int main(int argc, char const *argv[]) {
     .key = engine::window::Key::Escape
   });
 
-  engine::config::update_var(world, engine::bgfx::cvar::debug_stats, 0);
-  engine::config::update_var(world, engine::bgfx::cvar::debug_text, 1);
+  engine::config::update_var(world, engine::bgfx::cvar::debug_stats, 1);
+  //engine::config::update_var(world, engine::bgfx::cvar::debug_text, 1);
+  engine::config::update_var(world, engine::bgfx::cvar::mainwindow_clear_color_value, "0x4f4f4fff");
 
-  world.system()
+  world.system("debug draw")
     .kind(flecs::OnStore)
     .with<::engine::bgfx::BgfxContext>().singleton()
     .iter([](flecs::iter it) {
+      //SPDLOG_INFO("TICK");
+      //::bgfx::setDebug(BGFX_DEBUG_TEXT);
       ::bgfx::dbgTextClear();
       ::bgfx::dbgTextPrintf(1,1,0,"YHAHATBLE");
     });
 
 
-  /*config::create_typed_var_listener(world, bgfx::cvar::debug_stats, "mylistener", [](flecs::world& world, const std::int32_t& value) {
-
-  });*/
 
   world.app().enable_rest().run();
   

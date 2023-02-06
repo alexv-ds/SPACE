@@ -12,6 +12,7 @@ void register_internal_components(flecs::world& world) {
   world.add<ResetFlags>();
 
   world.component<UpdateDebugFlags>();
+  world.component<UpdateClearData>();
 }
 
 

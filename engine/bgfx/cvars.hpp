@@ -18,6 +18,12 @@ ENGINE_BGFX_DEFINE_CVARNAME(debug_stats);
 ENGINE_BGFX_DEFINE_CVARNAME(debug_text);
 ENGINE_BGFX_DEFINE_CVARNAME(debug_profiler);
 
+ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_depth); //1 or 0
+ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_stencil); //1 or 0
+ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_color_value); //hex string rgba example: "0xff0000ff"
+ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_depth_value); //float value
+ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_stencil_value); //from 0 to 255
+
 } //namespace engine::bgfx::cvar
 
 

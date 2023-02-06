@@ -11,6 +11,6 @@ struct ResetFlags {
   std::uint32_t flags;
 };
 struct UpdateDebugFlags {};
-
+struct UpdateClearData {};
 
 } //namespace engine::bgfx::detail

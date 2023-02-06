@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstdio>
 #include <spdlog/spdlog.h>
 #include <bgfx/bgfx.h>
 #include "bgfx.hpp"
@@ -51,8 +52,6 @@ static std::shared_ptr<BgfxLock> bgfx_init(flecs::world& world, std::shared_ptr<
   bool init_ok = ::bgfx::init(init);
   assert(init_ok);
 
-  ::bgfx::setViewClear(0, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH, 0x505050ff, 1.0f, 0);
-
   SPDLOG_TRACE("BGFX INITED");
   return std::make_shared<BgfxLock>(window);
 }
@@ -79,14 +78,14 @@ static void InitSystem(flecs::iter it, const window_backend_sfml::MainWindowSFML
 }
 
 static void BgfxFrameBegin(flecs::iter it, window::MainWindow* window) {
-  std::uint32_t reset_flags = BGFX_RESET_NONE;
-  if (const ResetFlags* p_flags = it.world().get<ResetFlags>(); p_flags) {
-    reset_flags = p_flags->flags;
-  }
-  window->events.iterate([reset_flags](const window::Event& event) {
+  window->events.iterate([&it](const window::Event& event) {
     if (event.is<window::event::Resized>()) {
+      std::uint32_t reset_flags = BGFX_RESET_NONE;
+      if (const ResetFlags* p_flags = it.world().get<ResetFlags>(); p_flags) {
+        reset_flags = p_flags->flags;
+      }
       const window::event::Resized& resize_event = event.get<window::event::Resized>();
-      SPDLOG_INFO("ON RESIZE");
+      SPDLOG_TRACE("ON RESIZE");
       ::bgfx::reset(resize_event.width, resize_event.height, reset_flags);
     }
   });
@@ -120,7 +119,6 @@ static void UpdateDebugFlagsSystem(flecs::iter it) {
     flags |= BGFX_DEBUG_STATS;
   }
   if (detail::is_cvar_enabled(world, cvar::debug_text)) {
-    SPDLOG_CRITICAL("NBOOOOOOOOOOOOOOOOOOOP");
     flags |= BGFX_DEBUG_TEXT;
   }
   if (detail::is_cvar_enabled(world, cvar::debug_profiler)) {
@@ -129,9 +127,59 @@ static void UpdateDebugFlagsSystem(flecs::iter it) {
   ::bgfx::setDebug(flags);
 }
 
+void System_UpdateClearData(flecs::iter it, Bgfx* bgfx_module) {
+  SPDLOG_TRACE("Update Clear Data");
+  flecs::world world = it.world();
+  world.remove<UpdateClearData>();
+
+  //clear flags
+  std::uint16_t clear_flags = BGFX_CLEAR_COLOR;
+  if (is_cvar_enabled(world, bgfx::cvar::mainwindow_clear_depth)) {
+    clear_flags |= BGFX_CLEAR_DEPTH;
+  }
+  if (is_cvar_enabled(world, bgfx::cvar::mainwindow_clear_stencil)) {
+    clear_flags |= BGFX_CLEAR_STENCIL;
+  }
+
+  //depth
+  float clear_depth = 0.0f;
+  if (const float* depth_value =
+        config::get_var<float>(world, bgfx::cvar::mainwindow_clear_depth_value); depth_value)
+  {
+    clear_depth = *depth_value;
+  }
+
+  //stencil
+  std::uint8_t clear_stencil = 0;
+  if (const std::int32_t* stencil_value =
+        config::get_var<std::int32_t>(world, bgfx::cvar::mainwindow_clear_stencil_value); stencil_value)
+  {
+    if (*stencil_value < 0 || *stencil_value > 255) {
+      SPDLOG_ERROR("{} is not in range from 0 to 255. Current value: {}", bgfx::cvar::mainwindow_clear_stencil_value, *stencil_value);
+    } else {
+      clear_stencil = static_cast<std::uint8_t>(*stencil_value);
+    }
+  }
+
+  //color
+  std::uint32_t clear_color;
+  static_assert(sizeof(std::uint32_t) == sizeof(unsigned long)); //Потому что мы используем strtoul() для конверта строки в uint32
+  if (const std::string* color_value =
+        config::get_var<std::string>(world, bgfx::cvar::mainwindow_clear_color_value); color_value)
+  {
+    char* end = nullptr;
+    clear_color = std::strtoul(color_value->c_str(), &end, 16);
+  }
+
+
+  ::bgfx::setViewClear(0, clear_flags, clear_color, clear_depth, clear_stencil);
+}
+
 } //namespace engine::bgfx::detail
 
-engine::Bgfx::Bgfx(flecs::world& world): reset_flags(BGFX_RESET_NONE) {
+engine::Bgfx::Bgfx(flecs::world& world):
+    reset_flags(BGFX_RESET_NONE)
+{
   using namespace ::engine::bgfx;
   world.import<Window>();
   world.import<WindowBackendSfml>();
@@ -147,6 +195,7 @@ engine::Bgfx::Bgfx(flecs::world& world): reset_flags(BGFX_RESET_NONE) {
 
   //systems
   world.system<const window_backend_sfml::MainWindowSFML>("system::InitSystem")
+    .kind(flecs::PostFrame)
     .arg(1).singleton()
     .without<BgfxContext>().singleton()
     .iter(detail::InitSystem);
@@ -174,5 +223,11 @@ engine::Bgfx::Bgfx(flecs::world& world): reset_flags(BGFX_RESET_NONE) {
     .with<BgfxContext>().singleton()
     .with<detail::UpdateDebugFlags>().singleton()
     .iter(detail::UpdateDebugFlagsSystem);
-
+  
+  world.system<Bgfx>("system::UpdateClearData")
+    .kind(flecs::PostFrame)
+    .with<BgfxContext>().singleton()
+    .with<detail::UpdateClearData>().singleton()
+    .arg(1).singleton()
+    .iter(detail::System_UpdateClearData);
 }
