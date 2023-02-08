@@ -38,6 +38,8 @@ add_executable(main
   engine/bgfx/cvars.cpp
   engine/bgfx/internal_components.cpp
   engine/config.cpp
+  engine/config2.cpp
+
 )
 
 target_link_libraries(main PRIVATE
