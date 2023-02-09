@@ -1,5 +1,6 @@
 #include <flecs.h>
 #include <cstdint>
+#include <string>
 
 namespace engine::config2 {
   namespace detail {
@@ -32,6 +33,7 @@ namespace engine::config2 {
       inline std::size_t to_string(char* buff, const std::size_t buff_size) {
         return ToStringFunc.f(buff, buff_size, value);
       }
+      //inline 
       Type value;
     };
 
@@ -45,20 +47,16 @@ namespace engine::config2 {
     using Uint32 = detail::TypedValue<std::uint32_t, "uint32", detail::testfunc<std::uint32_t>>;
     using Bool = detail::TypedValue<bool, "bool", detail::testfunc<bool>>;
     using Float = detail::TypedValue<float, "float", detail::testfunc<float>>;
+    //using String = detail::TypedValue<std::string, "string", detail::testfunc<std::string>>;
   } //namespace type
 
-  //void create_var(flecs::world& world, const char* name, type::Int32&& data) {}
-  //void create_var(flecs::world& world, const char* name, type::Uint32&& data) {}
-  //void create_var(flecs::world& world, const char* name, type::Bool&& data) {}
-  //void create_var(flecs::world& world, const char* name, type::Float&& data) {}
-
   template <class T>
-  void create_var(flecs::world& world, const char* name, T&& data) {}
+  void create_var(flecs::world& world, const char* name, T&& data);
 
 
   void keks() {
     flecs::world world;
-    create_var<type::Int32>(world, "123", 123);
+    create_var<std::uint64_t>(world, "123", 123);
   }
 
 
