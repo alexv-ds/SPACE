@@ -127,7 +127,7 @@ namespace engine::config {
 
     //Если Сущность представляющая переменную и слушатель является одной сущностью
     //то вешаем на нее не отношение, а непосредственно компонентн
-    //Потому что не может быть отношений на саму себя из-за флага flecs::Acyclic
+    //Потому что не может быть отношений на саму себя из-за флага flecs::Traversable
     //у ChangeListener
     if (var_entity.id() == listener_entity.id()) {
       listener_entity.set<ChangeListener>({.cb = std::move(onchange_cb)});
@@ -157,7 +157,7 @@ engine::Config::Config(flecs::world& world) {
   world.component<Var>();
   world.component<Changed>();
   world.component<ChangeListener>()
-    .add(flecs::Acyclic);
+    .add(flecs::Traversable);
   world.component<detail::UnitialisedVar>("detail::UnitialisedVar");
   
   //observers

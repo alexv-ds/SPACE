@@ -45,7 +45,7 @@ Graphics::Graphics(flecs::world& world) {
     .member<decltype(MainWindowCamera::camera_size)>("camera_size");
 
   world.component<RenderedBy>()
-    .add(flecs::Acyclic);
+    .add(flecs::Traversable);
 
 
   //systems
