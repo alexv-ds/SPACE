@@ -7,6 +7,8 @@
 #include "../window-backend-sfml.hpp"
 #include "../bgfx.hpp"
 #include "../config.hpp"
+#include "../config2.hpp"
+
 
 int main(int argc, char const *argv[]) {
   engine::setup_spdlog();
@@ -41,6 +43,9 @@ int main(int argc, char const *argv[]) {
       ::bgfx::dbgTextPrintf(1,1,0,"YHAHATBLE");
     });
 
+
+  world.import<engine::Config2>();
+  engine::config2::create_var<engine::config2::type::Int32>(world.entity("my_cvar"), 123);
 
 
   world.app().enable_rest().run();
