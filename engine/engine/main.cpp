@@ -14,7 +14,7 @@ int main(int argc, char const *argv[]) {
   engine::setup_spdlog();
   flecs::world world;
   world.set_target_fps(60);
-  world.set_threads(2);
+  //world.set_threads(2);
   world.import<flecs::monitor>();
   world.import<engine::Window>();
   world.import<engine::WindowBackendSfml>();
@@ -45,8 +45,14 @@ int main(int argc, char const *argv[]) {
 
 
   world.import<engine::Config2>();
-  engine::config2::create_var<engine::config2::type::Int32>(world.entity("my_cvar"), 123);
+  engine::config2::create_var<engine::config2::type::Int32>(world.entity("my_cvar"), 123)
+    .cvar_validate<engine::config2::type::Int32>([](const auto& data) {
+      SPDLOG_DEBUG("INSIDE VALIDATOR");
+      return false;
+    });
   //engine::config2::create_var<engine::config2::type::Uint32>(world.entity("my_cvar"), 321);
+
+  engine::config2::update_cvar(world.entity("my_cvar"), 321);
 
 
   world.app().enable_rest().run();

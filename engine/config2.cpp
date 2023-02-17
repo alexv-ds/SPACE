@@ -29,22 +29,13 @@ namespace engine::config2 {
         }
       }
     }*/
-
-    void UpdateCvars(flecs::iter it, const ConfigVar* config_var) {
-      flecs::world world = it.world();
-      SPDLOG_INFO("BOOOP");
-      flecs::id unvalidated_pair = it.pair(2);
-      for (auto i : it) {
-        flecs::entity e = it.entity(i);
-        //e.set_second()
-      }
-    }
   };
 
   cvar& cvar::cvar_validate(std::function<bool(flecs::entity)>&& func) {
     if (this->has<Validator>()) {
       SPDLOG_WARN("Entity '{}' already has validator. It will be overwritten.", this->path("::", ""));
     }
+    this->set<Validator>({.func = std::move(func)});
     return *this;
   }
 
@@ -54,17 +45,25 @@ engine::Config2::Config2(flecs::world& world) {
   using namespace config2;
   world.module<Config2>("config2");
 
- world.component<ValidatedData>();
- world.component<UnValidatedData>();
- world.component<DefaultData>();
- world.component<Validator>();
- world.component<UpdateData>();
- world.component<ConfigVar>()
-  .member(flecs::Entity, "data_component");
+  //components
+  world.component<ValidatedData>();
+  world.component<UnValidatedData>();
+  world.component<DefaultData>();
+  world.component<Validator>();
+  world.component<UpdateData>();
+  world.component<OnUpdate>();
+  world.component<SystemsInitialised>();
+  world.component<ConfigVar>()
+    .member(flecs::Entity, "data_component");
   world.component<type::Int32>("Int32")
     .member<decltype(type::Int32::value)>("value");
   world.component<type::Uint32>("Uint32")
     .member<decltype(type::Uint32::value)>("value");
+
+  //phases
+  this->validate_phase = world.entity("phase::validate").add(flecs::Phase).depends_on(flecs::PostFrame);
+  this->update_phase = world.entity("phase::update").add(flecs::Phase).depends_on(validate_phase);
+  this->notify_phase = world.entity("phase::notify").add(flecs::Phase).depends_on(update_phase);
 
   
   /*world.system<const ConfigVar, const Validator>("system::UpdateCvar")
@@ -73,9 +72,5 @@ engine::Config2::Config2(flecs::world& world) {
     .with<UpdateData>()
     .iter(detail::UpdateCvar);*/
 
-  world.system<const ConfigVar>("system::UpdateCvars")
-    .kind(flecs::PostFrame)
-    .with(flecs::Wildcard).second<UnValidatedData>()
-    .iter(detail::UpdateCvars);
 
 };
