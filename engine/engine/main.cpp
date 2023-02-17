@@ -46,6 +46,7 @@ int main(int argc, char const *argv[]) {
 
   world.import<engine::Config2>();
   engine::config2::create_var<engine::config2::type::Int32>(world.entity("my_cvar"), 123);
+  //engine::config2::create_var<engine::config2::type::Uint32>(world.entity("my_cvar"), 321);
 
 
   world.app().enable_rest().run();
