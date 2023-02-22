@@ -85,6 +85,9 @@ namespace engine::config2 {
       return *this;
     }
   };
+  struct ToLogString {
+    std::function<std::string(flecs::entity)> to_string;
+  };
 
   namespace detail {
     template <class T>

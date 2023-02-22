@@ -1,3 +1,4 @@
+#include <format>
 #include <spdlog/spdlog.h>
 #include "config2.hpp"
 
@@ -29,7 +30,33 @@ namespace engine::config2 {
         }
       }
     }*/
-  };
+
+    void UpdateCvars(flecs::iter it, const ConfigVar* config_var) {
+      flecs::world world = it.world();
+      SPDLOG_INFO("BOOOP");
+      flecs::id unvalidated_pair = it.pair(2);
+      for (auto i : it) {
+        flecs::entity e = it.entity(i);
+        //e.set_second()
+      }
+    }
+
+    template<typename T>               
+    concept component_with_value_member = requires { 
+      T::value;
+    };
+
+    template<component_with_value_member T>
+    std::string to_log_string(flecs::entity e) {
+      const T* data = e.get<T>();
+      if (!data) {
+        return {};
+      } else {
+        return std::format("{}", data->value);
+      }
+    }
+  } //namespace detail
+
 
   cvar& cvar::cvar_validate(std::function<bool(flecs::entity)>&& func) {
     if (this->has<Validator>()) {
@@ -38,7 +65,6 @@ namespace engine::config2 {
     this->set<Validator>({.func = std::move(func)});
     return *this;
   }
-
 } //namespace engine::config2
 
 engine::Config2::Config2(flecs::world& world) {
@@ -50,15 +76,16 @@ engine::Config2::Config2(flecs::world& world) {
   world.component<UnValidatedData>();
   world.component<DefaultData>();
   world.component<Validator>();
-  world.component<UpdateData>();
   world.component<OnUpdate>();
   world.component<SystemsInitialised>();
   world.component<ConfigVar>()
     .member(flecs::Entity, "data_component");
   world.component<type::Int32>("Int32")
-    .member<decltype(type::Int32::value)>("value");
+    .member<decltype(type::Int32::value)>("value")
+    .set<ToLogString>({.to_string = detail::to_log_string<type::Int32>});
   world.component<type::Uint32>("Uint32")
-    .member<decltype(type::Uint32::value)>("value");
+    .member<decltype(type::Uint32::value)>("value")
+    .set<ToLogString>({.to_string = detail::to_log_string<type::Int32>});
 
   //phases
   this->validate_phase = world.entity("phase::validate").add(flecs::Phase).depends_on(flecs::PostFrame);
