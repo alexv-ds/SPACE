@@ -1,12 +1,13 @@
-//#include <flecs.h>
 #include <spdlog/spdlog.h>
-#include "bgfx/bgfx.h"
 #include "setup_spdlog.hpp"
 
 #include "../window.hpp"
 #include "../window-backend-sfml.hpp"
-#include "../bgfx.hpp"
-#include "../config.hpp"
+#include "../cvar.hpp"
+
+void foo(int&& arg1) {
+
+}
 
 int main(int argc, char const *argv[]) {
   engine::setup_spdlog();
@@ -16,30 +17,16 @@ int main(int argc, char const *argv[]) {
   world.import<flecs::monitor>();
   world.import<engine::Window>();
   world.import<engine::WindowBackendSfml>();
-  world.import<engine::Bgfx>();
-
-  world.set<engine::window::MainWindowInit>({
-    .width = 1000,
-    .height = 600
-  });
+  world.set<engine::window::MainWindowInit>({.width = 1000, .height = 600});
   world.add<engine::window::ExitOnClosed>();
-  world.set<engine::window::ExitButton>({
-    .key = engine::window::Key::Escape
-  });
+  world.set<engine::window::ExitButton>({.key = engine::window::Key::Escape});
 
-  engine::config::update_var(world, engine::bgfx::cvar::debug_stats, 1);
-  engine::config::update_var(world, engine::bgfx::cvar::debug_text, 1);
-  engine::config::update_var(world, engine::bgfx::cvar::mainwindow_clear_color_value, "0x4f4f4fff");
+  engine::cvar::register_type<std::int32_t>(world, "cvar_type::int32");
 
-  world.system("debug draw")
-    .kind(flecs::OnStore)
-    .with<::engine::bgfx::BgfxContext>().singleton()
-    .iter([](flecs::iter it) {
-      ::bgfx::dbgTextPrintf(1,1,0,"YHAHATBLE");
-    });
-
-
-  world.app().enable_rest().run();
+  engine::cvar::create<std::int32_t>(world, "mycvar", 123);
   
+
+  
+  world.app().enable_rest().run();
   return 0;
 }

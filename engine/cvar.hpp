@@ -2,6 +2,7 @@
 #include <functional>
 #include <cstdint>
 #include <flecs.h>
+#include "cvar/internal.hpp"
 
 /*
   Supported Vars
@@ -15,22 +16,30 @@
   string
 */
 
-namespace cvar {
+namespace engine::cvar {
   template <class T>
-  using ChangeCb = std::function<void(flecs::entity, const T&);
+  using ChangeCb = std::function<void(flecs::entity, const T&)>;
 
   template <class T>
-  void register_type(flecs::world& world, const char* const type_name);
+  void register_type(flecs::world& world, const char* const type_name) {
+
+    world.component<internal::CVarDataTypeWrapper<T>>(type_name);
+    //world.component<internal::CVarDataTypeWrapper<T>>();
+  }
 
   template <class T>
-  void create(flecs::world& world, const char* const name, T&& default_value);
+  void create(flecs::world& world, const char* const name, T&& default_value) {
+    using ComponentType = internal::CVarDataTypeWrapper<T>;
+    flecs::entity cvar = world.entity(name);
+    cvar.set<ComponentType, internal::DataDefault>({.value = std::move(default_value)});
+    cvar.set<ComponentType, internal::DataCurrent>({.value = std::move(default_value)});
+    cvar.add<internal::NotifyCallbacks>();
+      //.set<ComponentType, internal::DataDefault>({.value = std::move(default_value)});
+  }
 
   template <class T>
   void update(flecs::world& world, const char* const name, T&& value);
 
   template <class T>
-  void change_callback(flecs::world& world, const char* const name);
-
-
-
+  void change_callback(flecs::world& world, const char* const name, ChangeCb<T>&& cb);
 }
