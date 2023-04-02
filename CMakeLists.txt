@@ -38,7 +38,7 @@ add_executable(main
   engine/bgfx/cvars.cpp
   engine/bgfx/internal_components.cpp
   engine/config.cpp
-
+  engine/cvar.cpp
 )
 
 target_link_libraries(main PRIVATE
