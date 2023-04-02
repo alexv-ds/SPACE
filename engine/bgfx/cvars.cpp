@@ -1,4 +1,3 @@
-#pragma once
 #include <flecs.h>
 #include "../config.hpp"
 #include "cvars.hpp"
