@@ -22,9 +22,10 @@ namespace engine::cvar {
 
   template <class T>
   void register_type(flecs::world& world, const char* const type_name) {
+    flecs::entity data_component = world.component<internal::CVarDataTypeWrapper<T>>(type_name);
 
-    world.component<internal::CVarDataTypeWrapper<T>>(type_name);
-    //world.component<internal::CVarDataTypeWrapper<T>>();
+    world.component<internal::CVarUpdateCallback<T>>("update_callback")
+      .child_of(data_component);
   }
 
   template <class T>
