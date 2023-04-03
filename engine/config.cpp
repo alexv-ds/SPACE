@@ -20,7 +20,7 @@ namespace engine::config {
       for (auto i : it) {
         if (!listeners[i].cb) {
           SPDLOG_ERROR("Cannot execute update callback. ChangeListener has null callback. Listener Entity: {}", 
-                       it.entity(i).path("::", ""));
+                       it.entity(i).path("::", "").c_str());
           continue;
         }
         listeners[i].cb(world, vars[i].data);
@@ -42,8 +42,8 @@ namespace engine::config {
                  "Var Entity: '{}', Listener Entity: '{}'",
                  expected_type,
                  stored_typename(variant),
-                 entity_by_stringview(world, var_name).path("::", ""),
-                 entity_by_stringview(world, listener_name).path("::", ""));
+                 entity_by_stringview(world, var_name).path("::", "").c_str(),
+                 entity_by_stringview(world, listener_name).path("::", "").c_str());
   }
 
   } //namespace detail;
@@ -64,7 +64,7 @@ namespace engine::config {
     flecs::entity entity = entity_by_stringview(world, name);
 
     if (entity.has<Var>()) {
-      SPDLOG_WARN("Double initialization of a config variable. Config Entity: {}", entity.path("::", ""));
+      SPDLOG_WARN("Double initialization of a config variable. Config Entity: {}", entity.path("::", "").c_str());
     }
 
     //Проверим наличие UnitialisedVar, если оно есть
@@ -78,7 +78,7 @@ namespace engine::config {
       } else {
         SPDLOG_WARN("Config Entity ({}) has a UnitialisedVar ({}), but its type is different from Var ({})."
                     " UnitialisedVar ignored.",
-                     entity.path("::", ""), stored_typename(uninitialised_var->data), stored_typename(data));
+                     entity.path("::", "").c_str(), stored_typename(uninitialised_var->data), stored_typename(data));
       }
       entity.remove<detail::UnitialisedVar>();
     }
@@ -102,7 +102,7 @@ namespace engine::config {
         }
       } else {
         SPDLOG_WARN("Cannot set '{}' data to '{}' variable. Config Entity: {}",
-                    stored_typename(data), stored_typename(var->data), entity.path("::", ""));
+                    stored_typename(data), stored_typename(var->data), entity.path("::", "").c_str());
       }
     } else {
       entity.set<detail::UnitialisedVar>({.data = std::move(data)});
@@ -119,7 +119,7 @@ namespace engine::config {
     
     if (listener_entity.has<ChangeListener>()) {
       SPDLOG_WARN("Listener double initialization. Listener Entity: {}. Var entity: {}.",
-                  listener_entity.path("::", ""), var_entity.path("::", ""));
+                  listener_entity.path("::", "").c_str(), var_entity.path("::", "").c_str());
     }
     if (const Var* var = var_entity.get<Var>(); var && !var_entity.has<Changed>()) {
       onchange_cb(world, var->data);
