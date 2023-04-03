@@ -13,14 +13,12 @@ struct CVarUpdateCallback {
   std::function<void(flecs::entity, const T&)> cb;
 };
 
+template <class T>
+struct CVarValidateCallback {
+  std::function<bool(const T&)> cb;
+};
+
 struct DataDefault {};
 struct DataCurrent {};
-struct NotifyCallbacks {};
-
-struct DataNew {};
-struct DataValidated {};
-
-
-
 
 }

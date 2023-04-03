@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <flecs.h>
 #include "bgfx/BgfxLock.hpp"
-#include "bgfx/cvars.hpp"
+#include "bgfx/bgfx_cvars.hpp"
 
 namespace engine {
 

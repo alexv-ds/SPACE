@@ -2,11 +2,10 @@
 #include <cstdio>
 #include <spdlog/spdlog.h>
 #include <bgfx/bgfx.h>
-#include "bgfx.hpp"
 #include "window.hpp"
 #include "window-backend-sfml.hpp"
-#include "config.hpp"
-#include "bgfx/cvars.hpp"
+#include "cvar.hpp"
+#include "bgfx.hpp"
 #include "bgfx/internal_components.hpp"
 
 namespace engine::bgfx::detail {
@@ -19,20 +18,16 @@ void register_cvars(flecs::world&); //impl in engine/bgfx/cvars.cpp
 
 static decltype(::bgfx::Resolution::reset) collect_reset_flags(flecs::world& world) {
   decltype(::bgfx::Resolution::reset) flags = BGFX_RESET_NONE;
-  if (const std::int32_t* p_vsync = config::get_var<std::int32_t>(world, cvar::vsync); p_vsync && *p_vsync > 0) {
+  if (::engine::cvar::read<bool>(world, cvar::vsync)) {
     flags |= BGFX_RESET_VSYNC;
   }
-  if (const std::int32_t* p_maxanisotropy = config::get_var<std::int32_t>(world, cvar::maxanisotropy);
-      p_maxanisotropy && *p_maxanisotropy > 0)
-  {
+  if (::engine::cvar::read<bool>(world, cvar::maxanisotropy)) {
     flags |= BGFX_RESET_MAXANISOTROPY;
   }
-  if (const std::int32_t* p_capture = config::get_var<std::int32_t>(world, cvar::capture); p_capture && *p_capture > 0) {
+  if (::engine::cvar::read<bool>(world, cvar::capture)) {
     flags |= BGFX_RESET_CAPTURE;
   }
-  if (const std::int32_t* p_flush_after_render = config::get_var<std::int32_t>(world, cvar::flush_after_render);
-      p_flush_after_render && *p_flush_after_render > 0)
-  {
+  if (::engine::cvar::read<bool>(world, cvar::flush_after_render)) {
     flags |= BGFX_RESET_FLUSH_AFTER_RENDER;
   }
   return flags;
@@ -54,15 +49,6 @@ static std::shared_ptr<BgfxLock> bgfx_init(flecs::world& world, std::shared_ptr<
 
   SPDLOG_TRACE("BGFX INITED");
   return std::make_shared<BgfxLock>(window);
-}
-
-static bool is_cvar_enabled(flecs::world& world, std::string_view cvarname) {
-  const std::int32_t* p_data = config::get_var<std::int32_t>(world, cvarname);
-  if (p_data && *p_data > 0) {
-    return true;
-  } else {
-    return false;
-  }
 }
 
 ////////////////////////////////////
@@ -109,19 +95,19 @@ static void UpdateDebugFlagsSystem(flecs::iter it) {
   flecs::world world = it.world();
   world.remove<UpdateDebugFlags>();
   std::uint32_t flags = BGFX_DEBUG_NONE;
-  if (detail::is_cvar_enabled(world, cvar::debug_wireframe)) {
+  if (::engine::cvar::read<bool>(world, cvar::debug_wireframe)) {
     flags |= BGFX_DEBUG_WIREFRAME;
   }
-  if (detail::is_cvar_enabled(world, cvar::debug_ihf)) {
+  if (::engine::cvar::read<bool>(world, cvar::debug_ihf)) {
     flags |= BGFX_DEBUG_IFH;
   }
-  if (detail::is_cvar_enabled(world, cvar::debug_stats)) {
+  if (::engine::cvar::read<bool>(world, cvar::debug_stats)) {
     flags |= BGFX_DEBUG_STATS;
   }
-  if (detail::is_cvar_enabled(world, cvar::debug_text)) {
+  if (::engine::cvar::read<bool>(world, cvar::debug_text)) {
     flags |= BGFX_DEBUG_TEXT;
   }
-  if (detail::is_cvar_enabled(world, cvar::debug_profiler)) {
+  if (::engine::cvar::read<bool>(world, cvar::debug_profiler)) {
     flags |= BGFX_DEBUG_PROFILER;
   }
   ::bgfx::setDebug(flags);
@@ -134,44 +120,28 @@ void System_UpdateClearData(flecs::iter it, Bgfx* bgfx_module) {
 
   //clear flags
   std::uint16_t clear_flags = BGFX_CLEAR_COLOR;
-  if (is_cvar_enabled(world, bgfx::cvar::mainwindow_clear_depth)) {
+  if (::engine::cvar::read<bool>(world, bgfx::cvar::mainwindow_clear_depth)) {
     clear_flags |= BGFX_CLEAR_DEPTH;
   }
-  if (is_cvar_enabled(world, bgfx::cvar::mainwindow_clear_stencil)) {
+  if (::engine::cvar::read<bool>(world, bgfx::cvar::mainwindow_clear_stencil)) {
     clear_flags |= BGFX_CLEAR_STENCIL;
   }
 
   //depth
-  float clear_depth = 0.0f;
-  if (const float* depth_value =
-        config::get_var<float>(world, bgfx::cvar::mainwindow_clear_depth_value); depth_value)
-  {
-    clear_depth = *depth_value;
-  }
+  float clear_depth = ::engine::cvar::read<float>(world, bgfx::cvar::mainwindow_clear_depth_value);
 
   //stencil
-  std::uint8_t clear_stencil = 0;
-  if (const std::int32_t* stencil_value =
-        config::get_var<std::int32_t>(world, bgfx::cvar::mainwindow_clear_stencil_value); stencil_value)
-  {
-    if (*stencil_value < 0 || *stencil_value > 255) {
-      SPDLOG_ERROR("{} is not in range from 0 to 255. Current value: {}", bgfx::cvar::mainwindow_clear_stencil_value, *stencil_value);
-    } else {
-      clear_stencil = static_cast<std::uint8_t>(*stencil_value);
-    }
-  }
+  std::uint8_t clear_stencil = ::engine::cvar::read<std::uint8_t>(world, bgfx::cvar::mainwindow_clear_stencil_value);
 
   //color
   std::uint32_t clear_color;
-  static_assert(sizeof(std::uint32_t) == sizeof(unsigned long)); //Потому что мы используем strtoul() для конверта строки в uint32
-  if (const std::string* color_value =
-        config::get_var<std::string>(world, bgfx::cvar::mainwindow_clear_color_value); color_value)
   {
+    const std::string color_value = ::engine::cvar::read<std::string>(world, bgfx::cvar::mainwindow_clear_color_value);
+    static_assert(sizeof(std::uint32_t) == sizeof(unsigned long)); //Потому что мы используем strtoul() для конверта строки в uint32
     char* end = nullptr;
-    clear_color = std::strtoul(color_value->c_str(), &end, 16);
+    clear_color = std::strtoul(color_value.c_str(), &end, 16);
   }
-
-
+  
   ::bgfx::setViewClear(0, clear_flags, clear_color, clear_depth, clear_stencil);
 }
 
@@ -183,7 +153,7 @@ engine::Bgfx::Bgfx(flecs::world& world):
   using namespace ::engine::bgfx;
   world.import<Window>();
   world.import<WindowBackendSfml>();
-  world.import<Config>();
+  world.import<Cvar>();
   world.module<Bgfx>("bgfx");
 
   //components

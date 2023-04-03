@@ -40,9 +40,8 @@ add_executable(main
   #engine/graphics-backend-bgfx.cpp
   engine/bgfx.cpp
   engine/bgfx/BgfxLock.cpp
-  engine/bgfx/cvars.cpp
+  engine/bgfx/bgfx_cvars.cpp
   engine/bgfx/internal_components.cpp
-  engine/config.cpp
   engine/cvar.cpp
 )
 

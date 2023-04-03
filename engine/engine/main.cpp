@@ -4,10 +4,9 @@
 #include "../window.hpp"
 #include "../window-backend-sfml.hpp"
 #include "../cvar.hpp"
+#include "../bgfx.hpp"
 
-void foo(int&& arg1) {
-
-}
+#include <bgfx/bgfx.h>
 
 int main(int argc, char const *argv[]) {
   engine::setup_spdlog();
@@ -17,14 +16,25 @@ int main(int argc, char const *argv[]) {
   world.import<flecs::monitor>();
   world.import<engine::Window>();
   world.import<engine::WindowBackendSfml>();
+  world.import<engine::Bgfx>();
   world.set<engine::window::MainWindowInit>({.width = 1000, .height = 600});
   world.add<engine::window::ExitOnClosed>();
   world.set<engine::window::ExitButton>({.key = engine::window::Key::Escape});
 
-  engine::cvar::register_type<std::int32_t>(world, "cvar_type::int32");
+  world.import<engine::Cvar>();
 
-  engine::cvar::create<std::int32_t>(world, "mycvar", 123);
-  
+  //engine::cvar::update<bool>(world, engine::bgfx::cvar::debug_stats, false);
+  engine::cvar::update<bool>(world, engine::bgfx::cvar::debug_text, true);
+  engine::cvar::update<std::string>(world, engine::bgfx::cvar::mainwindow_clear_color_value, "0x777777FF");
+
+  world.system("DEBUGTEXT")
+    .kind(flecs::OnStore)
+    .with<engine::bgfx::BgfxContext>().singleton()
+    .iter([](flecs::iter it) {
+      bgfx::dbgTextClear();
+      bgfx::dbgTextPrintf(0, 0, 0x0f, "Hello World");
+    });
+
 
   
   world.app().enable_rest().run();
