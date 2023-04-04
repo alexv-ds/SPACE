@@ -134,13 +134,7 @@ void System_UpdateClearData(flecs::iter it, Bgfx* bgfx_module) {
   std::uint8_t clear_stencil = ::engine::cvar::read<std::uint8_t>(world, bgfx::cvar::mainwindow_clear_stencil_value);
 
   //color
-  std::uint32_t clear_color;
-  {
-    const std::string color_value = ::engine::cvar::read<std::string>(world, bgfx::cvar::mainwindow_clear_color_value);
-    static_assert(sizeof(std::uint32_t) == sizeof(unsigned long)); //Потому что мы используем strtoul() для конверта строки в uint32
-    char* end = nullptr;
-    clear_color = std::strtoul(color_value.c_str(), &end, 16);
-  }
+  std::uint32_t clear_color = ::engine::cvar::read<std::uint32_t>(world, bgfx::cvar::mainwindow_clear_color_value);
   
   ::bgfx::setViewClear(0, clear_flags, clear_color, clear_depth, clear_stencil);
 }

@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]) {
 
   //engine::cvar::update<bool>(world, engine::bgfx::cvar::debug_stats, false);
   engine::cvar::update<bool>(world, engine::bgfx::cvar::debug_text, true);
-  engine::cvar::update<std::string>(world, engine::bgfx::cvar::mainwindow_clear_color_value, "0x777777FF");
+  engine::cvar::update<std::uint32_t>(world, engine::bgfx::cvar::mainwindow_clear_color_value, 0x444444FF);
 
   world.system("DEBUGTEXT")
     .kind(flecs::OnStore)

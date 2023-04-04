@@ -44,8 +44,8 @@ void register_cvars(flecs::world& world) {
     .on_change(update_clear_data<bool>);
   ::engine::cvar::create<bool>(world, cvar::mainwindow_clear_stencil, false)
     .on_change(update_clear_data<bool>);
-  ::engine::cvar::create<std::string>(world, cvar::mainwindow_clear_color_value, "0x000000ff")
-    .on_change(update_clear_data<std::string>);
+  ::engine::cvar::create<std::uint32_t>(world, cvar::mainwindow_clear_color_value, 0x000000ff)
+    .on_change(update_clear_data<std::uint32_t>);
   ::engine::cvar::create<float>(world, cvar::mainwindow_clear_depth_value, 0.0f)
     .on_change(update_clear_data<float>);
   ::engine::cvar::create<std::uint8_t>(world, cvar::mainwindow_clear_stencil_value, 0)
