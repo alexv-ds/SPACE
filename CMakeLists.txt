@@ -51,6 +51,7 @@ target_link_libraries(main PRIVATE
   spdlog::spdlog
   glm_libs
   bgfx
+  bx
 )
 
 add_executable(game

@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
 #include <spdlog/spdlog.h>
 #include <bgfx/bgfx.h>
 #include "window.hpp"
@@ -7,6 +8,13 @@
 #include "cvar.hpp"
 #include "bgfx.hpp"
 #include "bgfx/internal_components.hpp"
+
+#include <bx/bx.h>
+
+//see init.platformData.ndt in bgfx_init()
+#if BX_PLATFORM_LINUX
+  #include <X11/Xlib.h>
+#endif
 
 namespace engine::bgfx::detail {
 
@@ -39,7 +47,14 @@ static std::shared_ptr<BgfxLock> bgfx_init(flecs::world& world, std::shared_ptr<
 
   ::bgfx::Init init;
   init.type = ::bgfx::RendererType::Direct3D11;
-  init.platformData.nwh = window->getSystemHandle();
+  init.platformData.nwh = reinterpret_cast<void*>(window->getSystemHandle());
+#if BX_PLATFORM_LINUX
+  init.platformData.ndt = XOpenDisplay(nullptr);
+  if (!init.platformData.ndt) {
+    SPDLOG_CRITICAL("XOpenDisplay failed");
+    std::exit(EXIT_FAILURE);
+  }
+#endif
   init.resolution.width = window->getSize().x;
   init.resolution.height = window->getSize().y;
   init.resolution.reset  = collect_reset_flags(world);
