@@ -36,6 +36,8 @@ void register_cvars(flecs::world& world) {
   cvar::mainwindow_clear_color_value::create(world, 0x000000ff).on_change(update_clear_data<std::uint32_t>);
   cvar::mainwindow_clear_depth_value::create(world, 0.0f)      .on_change(update_clear_data<float>);
   cvar::mainwindow_clear_stencil_value::create(world, 0)       .on_change(update_clear_data<std::uint8_t>);
+
+  cvar::render_backend::create(world, "vulkan");
 } 
 
 

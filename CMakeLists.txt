@@ -43,6 +43,8 @@ add_executable(main
   engine/bgfx/bgfx_cvars.cpp
   engine/bgfx/internal_components.cpp
   engine/cvar.cpp
+
+  "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
 )
 
 target_link_libraries(main PRIVATE
@@ -53,6 +55,8 @@ target_link_libraries(main PRIVATE
   bgfx
   bx
 )
+add_dependencies(main shaderc)
+
 
 add_executable(game
   game/main.cpp
@@ -61,3 +65,13 @@ add_executable(game
   game/atmospherics.cpp
 )
 target_link_libraries(game PRIVATE flecs::flecs_static spdlog::spdlog)
+
+
+
+add_custom_command(
+  OUTPUT "${CMAKE_SOURCE_DIR}/compiled_shaders/fs_test.spirv.bin"
+  COMMAND shaderc -f "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc" -o "${CMAKE_SOURCE_DIR}/compiled_shaders/fs_test.spirv.bin" --platform windows --profile spirv --varyingdef "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc" --type fragment
+  MAIN_DEPENDENCY "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
+  DEPENDS shaderc
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)

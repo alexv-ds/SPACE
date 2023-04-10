@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <cstdint>
 #include "../cvar/define_helper.hpp"
 
@@ -25,6 +26,9 @@ ENGINE_BGFX_DEFINE_CVARNAME(bool, mainwindow_clear_stencil);
 ENGINE_BGFX_DEFINE_CVARNAME(std::uint32_t, mainwindow_clear_color_value);
 ENGINE_BGFX_DEFINE_CVARNAME(float, mainwindow_clear_depth_value);
 ENGINE_BGFX_DEFINE_CVARNAME(std::uint8_t, mainwindow_clear_stencil_value);
+
+ENGINE_BGFX_DEFINE_CVARNAME(std::string, render_backend);
+
 
 } //namespace engine::bgfx::cvar
 
