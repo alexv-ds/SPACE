@@ -19,7 +19,7 @@ void UpdateAmount(flecs::iter it, GasMixture* mixture, const GasData* data) {
 void UpdateSpecificHeat(flecs::iter it, GasMixture* mixture, const GasData* data) {
   const SpecificHeat* specific_heat = it.pair(2).second().get<SpecificHeat>();
   if (!specific_heat) {
-    SPDLOG_ERROR("Relation has no SpecificHeat component: {}", it.str());
+    SPDLOG_ERROR("Relation has no SpecificHeat component: {}", it.str().c_str());
     return;
   }
   for (auto i : it) {
