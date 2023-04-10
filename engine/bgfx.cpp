@@ -26,16 +26,16 @@ void register_cvars(flecs::world&); //impl in engine/bgfx/cvars.cpp
 
 static decltype(::bgfx::Resolution::reset) collect_reset_flags(flecs::world& world) {
   decltype(::bgfx::Resolution::reset) flags = BGFX_RESET_NONE;
-  if (::engine::cvar::read<bool>(world, cvar::vsync)) {
+  if (cvar::vsync::read(world)) {
     flags |= BGFX_RESET_VSYNC;
   }
-  if (::engine::cvar::read<bool>(world, cvar::maxanisotropy)) {
+  if (cvar::maxanisotropy::read(world)) {
     flags |= BGFX_RESET_MAXANISOTROPY;
   }
-  if (::engine::cvar::read<bool>(world, cvar::capture)) {
+  if (cvar::capture::read(world)) {
     flags |= BGFX_RESET_CAPTURE;
   }
-  if (::engine::cvar::read<bool>(world, cvar::flush_after_render)) {
+  if (cvar::flush_after_render::read(world)) {
     flags |= BGFX_RESET_FLUSH_AFTER_RENDER;
   }
   return flags;
@@ -110,19 +110,19 @@ static void UpdateDebugFlagsSystem(flecs::iter it) {
   flecs::world world = it.world();
   world.remove<UpdateDebugFlags>();
   std::uint32_t flags = BGFX_DEBUG_NONE;
-  if (::engine::cvar::read<bool>(world, cvar::debug_wireframe)) {
+  if (cvar::debug_wireframe::read(world)) {
     flags |= BGFX_DEBUG_WIREFRAME;
   }
-  if (::engine::cvar::read<bool>(world, cvar::debug_ihf)) {
+  if (cvar::debug_ihf::read(world)) {
     flags |= BGFX_DEBUG_IFH;
   }
-  if (::engine::cvar::read<bool>(world, cvar::debug_stats)) {
+  if (cvar::debug_stats::read(world)) {
     flags |= BGFX_DEBUG_STATS;
   }
-  if (::engine::cvar::read<bool>(world, cvar::debug_text)) {
+  if (cvar::debug_text::read(world)) {
     flags |= BGFX_DEBUG_TEXT;
   }
-  if (::engine::cvar::read<bool>(world, cvar::debug_profiler)) {
+  if (cvar::debug_profiler::read(world)) {
     flags |= BGFX_DEBUG_PROFILER;
   }
   ::bgfx::setDebug(flags);
@@ -135,21 +135,21 @@ void System_UpdateClearData(flecs::iter it, Bgfx* bgfx_module) {
 
   //clear flags
   std::uint16_t clear_flags = BGFX_CLEAR_COLOR;
-  if (::engine::cvar::read<bool>(world, bgfx::cvar::mainwindow_clear_depth)) {
+  if (cvar::mainwindow_clear_depth::read(world)) {
     clear_flags |= BGFX_CLEAR_DEPTH;
   }
-  if (::engine::cvar::read<bool>(world, bgfx::cvar::mainwindow_clear_stencil)) {
+  if (cvar::mainwindow_clear_stencil::read(world)) {
     clear_flags |= BGFX_CLEAR_STENCIL;
   }
 
   //depth
-  float clear_depth = ::engine::cvar::read<float>(world, bgfx::cvar::mainwindow_clear_depth_value);
+  float clear_depth = cvar::mainwindow_clear_depth_value::read(world);
 
   //stencil
-  std::uint8_t clear_stencil = ::engine::cvar::read<std::uint8_t>(world, bgfx::cvar::mainwindow_clear_stencil_value);
+  std::uint8_t clear_stencil = cvar::mainwindow_clear_stencil_value::read(world);
 
   //color
-  std::uint32_t clear_color = ::engine::cvar::read<std::uint32_t>(world, bgfx::cvar::mainwindow_clear_color_value);
+  std::uint32_t clear_color = cvar::mainwindow_clear_color_value::read(world);
   
   ::bgfx::setViewClear(0, clear_flags, clear_color, clear_depth, clear_stencil);
 }

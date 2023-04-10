@@ -1,28 +1,30 @@
 #pragma once
-#include <string_view>
+#include <cstdint>
+#include "../cvar/define_helper.hpp"
 
-#define ENGINE_BGFX_DEFINE_CVARNAME(x) constexpr const char* const x = "::engine::bgfx::cvar::" #x
+#define ENGINE_BGFX_DEFINE_CVARNAME(Type, Symbol) ENGINE_CVAR_DEFINE(Type, Symbol, "::engine::bgfx::cvar::" #Symbol)
+
 
 namespace engine::bgfx::cvar {
 
 using namespace std::string_view_literals;
 
-ENGINE_BGFX_DEFINE_CVARNAME(vsync);
-ENGINE_BGFX_DEFINE_CVARNAME(maxanisotropy);
-ENGINE_BGFX_DEFINE_CVARNAME(capture);
-ENGINE_BGFX_DEFINE_CVARNAME(flush_after_render);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, vsync);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, maxanisotropy);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, capture);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, flush_after_render);
 
-ENGINE_BGFX_DEFINE_CVARNAME(debug_wireframe);
-ENGINE_BGFX_DEFINE_CVARNAME(debug_ihf);
-ENGINE_BGFX_DEFINE_CVARNAME(debug_stats);
-ENGINE_BGFX_DEFINE_CVARNAME(debug_text);
-ENGINE_BGFX_DEFINE_CVARNAME(debug_profiler);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, debug_wireframe);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, debug_ihf);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, debug_stats);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, debug_text);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, debug_profiler);
 
-ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_depth); //1 or 0
-ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_stencil); //1 or 0
-ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_color_value); //hex string rgba example: "0xff0000ff"
-ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_depth_value); //float value
-ENGINE_BGFX_DEFINE_CVARNAME(mainwindow_clear_stencil_value); //from 0 to 255
+ENGINE_BGFX_DEFINE_CVARNAME(bool, mainwindow_clear_depth);
+ENGINE_BGFX_DEFINE_CVARNAME(bool, mainwindow_clear_stencil);
+ENGINE_BGFX_DEFINE_CVARNAME(std::uint32_t, mainwindow_clear_color_value);
+ENGINE_BGFX_DEFINE_CVARNAME(float, mainwindow_clear_depth_value);
+ENGINE_BGFX_DEFINE_CVARNAME(std::uint8_t, mainwindow_clear_stencil_value);
 
 } //namespace engine::bgfx::cvar
 
