@@ -23,7 +23,6 @@ int main(int argc, char const *argv[]) {
 
   world.import<engine::Cvar>();
 
-  engine::bgfx::cvar::render_backend::update(world, "Direct3D11");
   engine::bgfx::cvar::debug_stats::update(world, true);
   //engine::bgfx::cvar::debug_text::update(world, true);
   engine::bgfx::cvar::mainwindow_clear_color_value::update(world, 0x444444FF);

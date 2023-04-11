@@ -44,7 +44,8 @@ add_executable(main
   engine/bgfx/internal_components.cpp
   engine/cvar.cpp
 
-  "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
+
+  #"${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
 )
 
 target_link_libraries(main PRIVATE
@@ -66,12 +67,40 @@ add_executable(game
 )
 target_link_libraries(game PRIVATE flecs::flecs_static spdlog::spdlog)
 
+#list (APPEND FOR_COMPILE_SHADERS
+#  "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
+#)
 
+function(compile_shader TARGET IN_FILE OUT_DIR DEF_FILE)
+  string(REGEX MATCH "fs_.*\\.sc$" MATCH_RESULT ${IN_FILE})
+  if(MATCH_RESULT)
+    set(SHADER_TYPE "fragment")
+  else()
+    set(SHADER_TYPE "vertex")
+  endif()
 
-add_custom_command(
-  OUTPUT "${CMAKE_SOURCE_DIR}/compiled_shaders/fs_test.spirv.bin"
-  COMMAND shaderc -f "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc" -o "${CMAKE_SOURCE_DIR}/compiled_shaders/fs_test.spirv.bin" --platform windows --profile spirv --varyingdef "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc" --type fragment
-  MAIN_DEPENDENCY "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
-  DEPENDS shaderc
-  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  get_filename_component(SHADER_FILENAME "${IN_FILE}" NAME_WLE)
+  add_custom_command(
+    OUTPUT "${OUT_DIR}/${SHADER_FILENAME}.spirv.bin"
+    COMMAND shaderc -f "${IN_FILE}" -o "${OUT_DIR}/${SHADER_FILENAME}.spirv.bin" --platform windows --profile spirv --varyingdef "${DEF_FILE}" --type "${SHADER_TYPE}"
+    MAIN_DEPENDENCY "${IN_FILE}"
+    DEPENDS shaderc
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  )
+
+  target_sources(${TARGET} PRIVATE "${IN_FILE}")
+endfunction()
+
+compile_shader(
+  main
+  "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
+  "${CMAKE_SOURCE_DIR}/compiled_shaders"
+  "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc"
+)
+
+compile_shader(
+  main
+  "${CMAKE_SOURCE_DIR}/shaders/vs_test.sc"
+  "${CMAKE_SOURCE_DIR}/compiled_shaders"
+  "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc"
 )
