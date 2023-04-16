@@ -82,7 +82,7 @@ function(compile_shader TARGET IN_FILE OUT_DIR DEF_FILE)
   get_filename_component(SHADER_FILENAME "${IN_FILE}" NAME_WLE)
   add_custom_command(
     OUTPUT "${OUT_DIR}/${SHADER_FILENAME}.spirv.bin"
-    COMMAND shaderc -f "${IN_FILE}" -o "${OUT_DIR}/${SHADER_FILENAME}.spirv.bin" --platform windows --profile spirv --varyingdef "${DEF_FILE}" --type "${SHADER_TYPE}"
+    COMMAND shaderc -f "${IN_FILE}" -o "${OUT_DIR}/${SHADER_FILENAME}.spirv.bin" --profile spirv --varyingdef "${DEF_FILE}" --type "${SHADER_TYPE}"
     MAIN_DEPENDENCY "${IN_FILE}"
     DEPENDS shaderc
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
