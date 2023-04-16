@@ -118,8 +118,8 @@ static void BgfxFrameBegin(flecs::iter it, window::MainWindow* window) {
   window->events.iterate([&it](const window::Event& event) {
     if (event.is<window::event::Resized>()) {
       std::uint32_t reset_flags = BGFX_RESET_NONE;
-      if (const ResetFlags* p_flags = it.world().get<ResetFlags>(); p_flags) {
-        reset_flags = p_flags->flags;
+      if (const Bgfx* p_module = it.world().get<Bgfx>(); p_module) {
+        reset_flags = p_module->reset_flags;
       }
       const window::event::Resized& resize_event = event.get<window::event::Resized>();
       SPDLOG_TRACE("ON RESIZE");
@@ -137,7 +137,10 @@ static void BgfxFrameEnd(flecs::iter it) {
 static void UpdateReset(flecs::iter it, const window::MainWindow* window) {
   flecs::world world = it.world();
   auto reset_flags = collect_reset_flags(world);
-  world.set<ResetFlags>({.flags = reset_flags});
+  
+  flecs::ref<Bgfx> module = world.get_ref<Bgfx>();
+  module->reset_flags = reset_flags;
+
   ::bgfx::reset(window->width, window->height, reset_flags);
 }
 

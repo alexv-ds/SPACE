@@ -24,5 +24,4 @@ namespace engine::bgfx {
     std::shared_ptr<BgfxLock> lock;
   };
 
-  struct DebugStats {};
 } // namespace engine::bgfx
