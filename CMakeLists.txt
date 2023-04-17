@@ -58,6 +58,12 @@ target_link_libraries(main PRIVATE
 )
 add_dependencies(main shaderc)
 
+include(cmake/embeded_shaders.cmake)
+
+
+emsh_compile_to_header("${CMAKE_SOURCE_DIR}/shaders/fs_test.sc" "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc")
+emsh_compile_to_header("${CMAKE_SOURCE_DIR}/shaders/vs_test.sc" "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc")
+target_link_libraries(main PRIVATE embeded_shaders)
 
 add_executable(game
   game/main.cpp
@@ -66,41 +72,3 @@ add_executable(game
   game/atmospherics.cpp
 )
 target_link_libraries(game PRIVATE flecs::flecs_static spdlog::spdlog)
-
-#list (APPEND FOR_COMPILE_SHADERS
-#  "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
-#)
-
-function(compile_shader TARGET IN_FILE OUT_DIR DEF_FILE)
-  string(REGEX MATCH "fs_.*\\.sc$" MATCH_RESULT ${IN_FILE})
-  if(MATCH_RESULT)
-    set(SHADER_TYPE "fragment")
-  else()
-    set(SHADER_TYPE "vertex")
-  endif()
-
-  get_filename_component(SHADER_FILENAME "${IN_FILE}" NAME_WLE)
-  add_custom_command(
-    OUTPUT "${OUT_DIR}/${SHADER_FILENAME}.spirv.bin"
-    COMMAND shaderc -f "${IN_FILE}" -o "${OUT_DIR}/${SHADER_FILENAME}.spirv.bin" --profile spirv --varyingdef "${DEF_FILE}" --type "${SHADER_TYPE}"
-    MAIN_DEPENDENCY "${IN_FILE}"
-    DEPENDS shaderc
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-  )
-
-  target_sources(${TARGET} PRIVATE "${IN_FILE}")
-endfunction()
-
-compile_shader(
-  main
-  "${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
-  "${CMAKE_SOURCE_DIR}/compiled_shaders"
-  "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc"
-)
-
-compile_shader(
-  main
-  "${CMAKE_SOURCE_DIR}/shaders/vs_test.sc"
-  "${CMAKE_SOURCE_DIR}/compiled_shaders"
-  "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc"
-)
