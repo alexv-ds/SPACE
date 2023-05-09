@@ -8,6 +8,8 @@
 
 #include <bgfx/bgfx.h>
 
+void test_stuff(flecs::world& world);
+
 int main(int argc, char const *argv[]) {
   engine::setup_spdlog();
   flecs::world world;
@@ -23,8 +25,8 @@ int main(int argc, char const *argv[]) {
 
   world.import<engine::Cvar>();
 
-  engine::bgfx::cvar::debug_stats::update(world, true);
-  //engine::bgfx::cvar::debug_text::update(world, true);
+  //engine::bgfx::cvar::debug_stats::update(world, true);
+  engine::bgfx::cvar::debug_text::update(world, true);
   engine::bgfx::cvar::mainwindow_clear_color_value::update(world, 0x444444FF);
 
   world.system("DEBUGTEXT")
@@ -35,7 +37,7 @@ int main(int argc, char const *argv[]) {
       bgfx::dbgTextPrintf(0, 0, 0x0f, "Hello World");
     });
 
-
+	test_stuff(world);
   
   world.app().enable_rest().run();
   return 0;

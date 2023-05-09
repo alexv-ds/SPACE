@@ -27,6 +27,7 @@ add_executable(main
   engine/engine/main.cpp
   engine/engine/setup_spdlog.cpp
   engine/engine/flecs_helpers.cpp
+  engine/engine/test_stuff.cpp
 
   engine/filesystem-backend-stdlib.cpp
   engine/filesystem.cpp
