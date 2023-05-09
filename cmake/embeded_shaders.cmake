@@ -2,6 +2,7 @@ set(EMSH_GENERATED_INCLUDE_DIR "${CMAKE_BINARY_DIR}/embeded_shaders_include/embe
 
 add_library(embeded_shaders INTERFACE)
 add_dependencies(embeded_shaders shaderc)
+target_include_directories(embeded_shaders INTERFACE "${CMAKE_BINARY_DIR}/embeded_shaders_include") 
 
 function (emsh_compile_to_header IN_FILE DEF_FILE)
   string(REGEX MATCH "fs_.*\\.sc$" MATCH_RESULT ${IN_FILE})
