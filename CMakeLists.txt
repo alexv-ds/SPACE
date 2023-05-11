@@ -21,32 +21,23 @@ find_package(SFML REQUIRED)
 find_package(FLECS REQUIRED)
 find_package(SPDLOG REQUIRED)
 find_package(GLM REQUIRED)
-find_package(BGFX REQUIRED)
 
 add_executable(main
   engine/engine/main.cpp
   engine/engine/setup_spdlog.cpp
   engine/engine/flecs_helpers.cpp
-  engine/engine/test_stuff.cpp
 
   engine/filesystem-backend-stdlib.cpp
   engine/filesystem.cpp
   engine/geometry.cpp
   engine/glm-reflection.cpp
-  #engine/modules/graphics-backend-sfml.cpp
   engine/graphics.cpp
   engine/transform.cpp
   engine/window-backend-sfml.cpp
   engine/window.cpp
-  #engine/graphics-backend-bgfx.cpp
-  engine/bgfx.cpp
-  engine/bgfx/BgfxLock.cpp
-  engine/bgfx/bgfx_cvars.cpp
-  engine/bgfx/internal_components.cpp
   engine/cvar.cpp
 
-
-  #"${CMAKE_SOURCE_DIR}/shaders/fs_test.sc"
+  engine/graphics-backend-sfml.cpp
 )
 
 target_link_libraries(main PRIVATE
@@ -54,17 +45,7 @@ target_link_libraries(main PRIVATE
   flecs::flecs_static
   spdlog::spdlog
   glm_libs
-  bgfx
-  bx
 )
-add_dependencies(main shaderc)
-
-include(cmake/embeded_shaders.cmake)
-
-
-emsh_compile_to_header("${CMAKE_SOURCE_DIR}/shaders/fs_test.sc" "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc")
-emsh_compile_to_header("${CMAKE_SOURCE_DIR}/shaders/vs_test.sc" "${CMAKE_SOURCE_DIR}/shaders/varying.def.sc")
-target_link_libraries(main PRIVATE embeded_shaders)
 
 add_executable(game
   game/main.cpp

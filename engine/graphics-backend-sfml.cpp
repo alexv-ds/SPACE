@@ -10,7 +10,7 @@
 namespace engine::graphics_backend_sfml::detail {
 
 void AddRenderTarget(flecs::entity e) {
-  const window_backend_sfml::MainWindowSFML* sfml_window = e.world().get<window_backend_sfml::MainWindowSFML>();
+  const auto* sfml_window = e.world().get<window_backend_sfml::MainWindowSFML_RenderWindow>();
   e.set<RenderTarget>({.target = sfml_window->window});
 }
 
@@ -101,7 +101,7 @@ GraphicsBackendSFML::GraphicsBackendSFML(flecs::world& world) {
 
   //systems 
   world.system("system::AddRenderTarget")
-    .with<window_backend_sfml::MainWindowSFML>().singleton()
+    .with<window_backend_sfml::MainWindowSFML_RenderWindow>().singleton()
     .with<graphics::MainWindowCamera>()
     .without<RenderTarget>()
     .each(detail::AddRenderTarget);
