@@ -1,7 +1,6 @@
 message("----- CONFIGURING SFML -----")
 option(SFML_BUILD_AUDIO off)
 option(SFML_BUILD_NETWORK off)
-option(SFML_BUILD_GRAPHICS on)
 option(WARNINGS_AS_ERRORS off)
 option(BUILD_SHARED_LIBS off)
 

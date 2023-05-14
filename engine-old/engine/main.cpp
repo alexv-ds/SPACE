@@ -8,6 +8,12 @@
 #include "../geometry.hpp"
 #include "../graphics-backend-sfml.hpp"
 #include "../transform.hpp"
+#include "../imgui.hpp"
+#include "../imgui-backend-sfml.hpp"
+
+
+#include <imgui.h>
+#include <imgui-SFML.h>
 
 
 int main(int argc, char const *argv[]) {
@@ -28,6 +34,9 @@ int main(int argc, char const *argv[]) {
   world.import<engine::Transform>();
   world.import<engine::GraphicsBackendSFML>();
 
+  world.import<engine::Imgui>();
+  world.import<engine::ImguiBackendSfml>();
+
 
   flecs::entity camera = world.entity()
     .set_doc_name("Main Camera")
@@ -42,14 +51,14 @@ int main(int argc, char const *argv[]) {
     })
     .add<engine::transform::Transform2>();
 
-  flecs::entity drawable = world.entity()
+  world.entity()
     .set_doc_name("drawable")
     .set<engine::geometry::Square>({.size=1})
     .add<engine::graphics_backend_sfml::Square>()
     //.set<engine::transform::Rotation2>({.angle = 30.30})
     //.set<engine::transform::Scale2>({.x=2,.y=2})
     .set<engine::transform::Position2>({.x=0,.y=0})
-    .add<engine::transform::Transform2>()
+    //.add<engine::transform::Transform2>()
     .set<engine::graphics::Color>(engine::graphics::color::brown)
     .add<engine::graphics::RenderedBy>(camera);
 
@@ -63,7 +72,14 @@ int main(int argc, char const *argv[]) {
 
   world.system<engine::window_backend_sfml::MainWindowSFML_RenderWindow>("swap buffers")
     .kind(flecs::PostFrame)
+    .with<engine::imgui_backend_sfml::Context>().singleton()
     .each([](flecs::entity e, engine::window_backend_sfml::MainWindowSFML_RenderWindow& renderwindow) {
+      ImGui::SFML::SetCurrentWindow(*renderwindow.window);
+      ImGui::SFML::Update(*renderwindow.window, sf::seconds(e.delta_time()));
+
+      ImGui::ShowDemoWindow();
+
+      ImGui::SFML::Render(*renderwindow.window);
       renderwindow.window->display();
     });
 
