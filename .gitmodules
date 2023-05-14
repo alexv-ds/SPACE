@@ -10,9 +10,6 @@
 [submodule "dep/glm"]
 	path = dep/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "dep/bgfx-cmake"]
-	path = dep/bgfx-cmake
-	url = https://github.com/bkaradzic/bgfx.cmake.git
 [submodule "dep/imgui-sfml"]
 	path = dep/imgui-sfml
 	url = https://github.com/SFML/imgui-sfml.git
