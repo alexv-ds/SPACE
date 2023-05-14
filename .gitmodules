@@ -7,9 +7,6 @@
 [submodule "dep/glm"]
 	path = dep/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "dep/imgui-sfml"]
-	path = dep/imgui-sfml
-	url = https://github.com/SFML/imgui-sfml.git
 [submodule "dep/imgui"]
 	path = dep/imgui
 	url = https://github.com/ocornut/imgui.git
