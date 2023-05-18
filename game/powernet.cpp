@@ -1,7 +1,10 @@
 #include <cmath>
 #include <type_traits>
-#include <format>
+//#include <format>
 #include "powernet.hpp"
+
+#include <spdlog/spdlog.h>
+#include <spdlog/fmt/fmt.h>
 
 namespace game::powernet::detail {
 
@@ -73,7 +76,7 @@ static void create_systems_set(flecs::world& world, const flecs::entity_t tick_s
   //CleanupPowernetLastFrameData
   {
     flecs::entity cleanup_system_scope = world.entity("system::CleanupPowernetLastFrameData");
-    flecs::system_builder cleanup_system = world.system<Powernet>(std::format("{}_CleanupPowernetLastFrameData", speed_name).c_str());
+    flecs::system_builder cleanup_system = world.system<Powernet>((std::string(speed_name) + "_CleanupPowernetLastFrameData").c_str());
 
     cleanup_system.instanced();
     if constexpr (std::is_void_v<T>) {
@@ -99,7 +102,7 @@ static void create_systems_set(flecs::world& world, const flecs::entity_t tick_s
   //GeneratePower
   {
     flecs::entity generate_system_scope = world.entity("system::GeneratePower");
-    flecs::system_builder generate_system = world.system<Powernet, const Producer>(std::format("{}_GeneratePower", speed_name).c_str());
+    flecs::system_builder generate_system = world.system<Powernet, const Producer>((std::string(speed_name) + "_GeneratePower").c_str());
 
     generate_system.arg(1).up<Link>();
     generate_system.without<Disabled>();
@@ -126,7 +129,7 @@ static void create_systems_set(flecs::world& world, const flecs::entity_t tick_s
   //ConsumePower
   {
     flecs::entity consume_system_scope = world.entity("system::ConsumePower");
-    flecs::system_builder consume_system = world.system<Powernet, const Consumer>(std::format("{}_ConsumePower", speed_name).c_str());
+    flecs::system_builder consume_system = world.system<Powernet, const Consumer>((std::string(speed_name) + "_ConsumePower").c_str());
 
     consume_system.term_at(1).up<Link>();
     consume_system.without<Disabled>();
@@ -153,7 +156,7 @@ static void create_systems_set(flecs::world& world, const flecs::entity_t tick_s
   //UpdateEnergyStorages
   {
     flecs::entity storages_system_scope = world.entity("system::UpdateEnergyStorages");
-    flecs::system_builder storages_system = world.system<Powernet, EnergyStorage>(std::format("{}_UpdateEnergyStorages", speed_name).c_str());
+    flecs::system_builder storages_system = world.system<Powernet, EnergyStorage>((std::string(speed_name) + "_UpdateEnergyStorages").c_str());
 
     storages_system.arg(1).up<Link>();
     storages_system.without<Disabled>();
@@ -180,7 +183,7 @@ static void create_systems_set(flecs::world& world, const flecs::entity_t tick_s
   //UpdateConsumers
   {
     flecs::entity update_consumers_system_scope = world.entity("system::UpdateConsumers");
-    flecs::system_builder update_consumers_system = world.system<Powernet, const Consumer>(std::format("{}_UpdateConsumers", speed_name).c_str());
+    flecs::system_builder update_consumers_system = world.system<Powernet, const Consumer>((std::string(speed_name) + "_UpdateConsumers").c_str());
 
     update_consumers_system.arg(1).up<Link>();
     update_consumers_system.with<Powerized>().optional().inout();
@@ -219,7 +222,7 @@ static void register_components(flecs::world& world) {
     .member<float>("power");
 
   world.component<Link>()
-    .add(flecs::Acyclic);
+    .add(flecs::Traversable);
 
   world.component<Powerized>();
   world.component<Disabled>();

@@ -66,7 +66,7 @@ add_subdirectory(engine-entry)
 
 add_executable(game
   game/main.cpp
-#  game/powernet.cpp
+  game/powernet.cpp
 #  engine/engine/setup_spdlog.cpp
 #  game/atmospherics.cpp
 )

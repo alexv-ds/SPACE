@@ -25,7 +25,11 @@
 
 #include <engine/debug/imgui.hpp>
 
+#include "imgui_style.hpp"
 
+void init_style(ImGuiStyle& style) {
+  //embraceTheDarkness();
+}
 
 
 ///@brief https://github.com/gabime/spdlog/blob/57a9fd0841f00e92b478a07fef62636d7be612a8/include/spdlog/details/os-inl.h#L600
@@ -107,6 +111,10 @@ static void init_cb() {
     .ini_filename = "imgui.ini"
   });
 
+  init_style(ImGui::GetStyle());
+
+
+
   g_world->add<engine::debug::ImGuiContext>();
 
   g_pass_action.colors[0].action = SG_ACTION_CLEAR;
@@ -127,8 +135,8 @@ static void frame_cb() {
   //imgui prepare
   const int width = sapp_width();
   const int height = sapp_height();
-  simgui_new_frame({width, height, delta_time, sapp_dpi_scale()});
 
+  simgui_new_frame({width, height, delta_time, sapp_dpi_scale()});
   //update world
   bool is_countinue = engine::update_world(g_world, delta_time);
   if (!is_countinue) {
@@ -147,6 +155,7 @@ void event_cb(const sapp_event* event) {
 }
 
 sapp_desc sokol_main(int argc, char* argv[]) {
+  SPDLOG_INFO("HI DUDDLES");
   g_argc = argc;
   g_argv = argv;
 
@@ -176,6 +185,7 @@ sapp_desc sokol_main(int argc, char* argv[]) {
       .func = sokol_logfunc
     },
 
-    .win32_console_utf8 = true
+    .win32_console_utf8 = true,
+    .html5_canvas_name = "canvas"
   };
 }
