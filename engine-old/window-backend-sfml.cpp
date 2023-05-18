@@ -6,6 +6,7 @@
 #include <SFML/Window/WindowBase.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
+#include <SFML/Graphics.hpp>
 #include "window-backend-sfml.hpp"
 #include "window.hpp"
 
@@ -425,6 +426,12 @@ static void push_event(window::FrameEventsStorage& storage, const sf::Event& eve
 /////////////////////////////////////
 
 static void InitSystem(flecs::iter it, const window::MainWindowInit* initdata) {
+  it.world().remove<window::MainWindowInit>();
+  it.world().set<window::MainWindow>({
+    .width = initdata->width,
+    .height = initdata->height
+  });
+
   sf::VideoMode video_mode({initdata->width, initdata->height});
 
   static_assert(sf::Style::Close == static_cast<std::uint32_t>(window::Style::Close));
@@ -435,14 +442,14 @@ static void InitSystem(flecs::iter it, const window::MainWindowInit* initdata) {
   static_assert(sf::Style::Titlebar == static_cast<std::uint32_t>(window::Style::Titlebar));
   std::uint32_t style = static_cast<std::uint32_t>(initdata->style);
 
-  std::shared_ptr window = std::make_shared<sf::WindowBase>(video_mode, initdata->title, style);
-
-  it.world().set<window::MainWindow>({
-    .width = initdata->width,
-    .height = initdata->height
-  });
-  it.world().set<MainWindowSFML>({.window = std::move(window)});
-  it.world().remove<window::MainWindowInit>();
+  if (initdata->init_render_window) {
+    std::shared_ptr render_window = std::make_shared<sf::RenderWindow>(video_mode, initdata->title, style);
+    it.world().set<MainWindowSFML_RenderWindow>({.window = render_window});
+    it.world().set<MainWindowSFML>({.window = render_window});
+  } else {
+    std::shared_ptr base_window = std::make_shared<sf::WindowBase>(video_mode, initdata->title, style);
+    it.world().set<MainWindowSFML>({.window = base_window});
+  }
 }
 
 //Довольно странно если за один кадр будет больше 20 ивентов
@@ -484,6 +491,7 @@ namespace engine {
 
     //components
     world.component<MainWindowSFML>();
+    world.component<MainWindowSFML_RenderWindow>();
 
     //phases
     flecs::entity load_events_phase;

@@ -32,6 +32,8 @@ namespace engine::window {
     std::uint32_t height = 480;
     std::string title = "Main Window ^_^";
     Style style = Style::Default;
+
+    bool init_render_window = false;
   };
 
   struct MainWindow {

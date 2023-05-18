@@ -33,3 +33,6 @@
 
 #build dir
 build
+
+#imgui settings file
+imgui.ini

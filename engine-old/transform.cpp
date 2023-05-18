@@ -80,7 +80,7 @@ Transform::Transform(flecs::world& world) {
     .without<Transform2>().out()
     .with<Position2>().or_()
     .with<Rotation2>().or_()
-    .with<Scale2>().or_()
+    .with<Scale2>()
     .each(detail::AddTransform);
   
   world.system("system::RemoveTransform")

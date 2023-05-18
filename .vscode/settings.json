@@ -92,7 +92,9 @@
     "coroutine": "cpp",
     "resumable": "cpp",
     "string_view": "cpp",
-    "cinttypes": "cpp"
+    "cinttypes": "cpp",
+    "private_api.h": "c",
+    "id_record.h": "c"
   },
   "cmake.debugConfig" : {
     "cwd": "${workspaceFolder}"
