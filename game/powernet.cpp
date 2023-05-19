@@ -46,25 +46,31 @@ static inline void UpdateConsumers(flecs::iter it, Powernet* powernet, const Con
   }
 }
 
-static inline void UpdateEnergyStorages(flecs::entity e, Powernet& powernet, EnergyStorage& storage) {
-  storage.energy -= e.delta_time() * storage.last_update_power;
+static inline void UpdateEnergyStorages(flecs::iter it, Powernet* p_powernet, EnergyStorage* p_storage) {
+  float dt = it.delta_time();
 
-  const float power_excess = powernet.power_generation - powernet.power_consumption;
-  //зарядка
-  if (power_excess > 0 && storage.energy < storage.max_energy) {
-    storage.last_update_power = -(power_excess > storage.input_power ? storage.input_power : power_excess);
-  //разрядка
-  } else if (power_excess < 0 && storage.energy > 0) {
-    float needs_powed = std::abs(power_excess);
-    if (needs_powed > storage.max_output_power) {
-      storage.last_update_power = storage.max_output_power;
-    } else if (needs_powed < storage.min_output_power) {
-      storage.last_update_power = storage.min_output_power;
-    } else {
-      storage.last_update_power = needs_powed;
-    }
-    powernet.power_generation += storage.last_update_power;
-  }
+  for (auto i : it) {
+     Powernet& powernet = p_powernet[i];
+     EnergyStorage& storage = p_storage[i];
+     
+    storage.energy -= dt * storage.last_update_power;
+    const float power_excess = powernet.power_generation - powernet.power_consumption;
+    //зарядка
+    if (power_excess > 0 && storage.energy < storage.max_energy) {
+      storage.last_update_power = -(power_excess > storage.input_power ? storage.input_power : power_excess);
+    //разрядка
+    } else if (power_excess < 0 && storage.energy > 0) {
+      float needs_powed = std::abs(power_excess);
+      if (needs_powed > storage.max_output_power) {
+        storage.last_update_power = storage.max_output_power;
+      } else if (needs_powed < storage.min_output_power) {
+        storage.last_update_power = storage.min_output_power;
+      } else {
+        storage.last_update_power = needs_powed;
+      }
+      powernet.power_generation += storage.last_update_power;
+    } 
+  } //end of for
 }
 
 static inline void ObserverOnSet_Disabled(flecs::entity e) {
@@ -176,7 +182,8 @@ static void create_systems_set(flecs::world& world, const flecs::entity_t tick_s
       storages_system.tick_source(tick_source);
     }
     storages_system
-      .each(UpdateEnergyStorages)
+      //.each(UpdateEnergyStorages)
+      .iter(UpdateEnergyStorages)
       .child_of(storages_system_scope);
   }
 
