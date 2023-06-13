@@ -1,6 +1,7 @@
 #include <string>
 #include <cstdint>
 #include <cstdlib>
+#include <engine/log.hpp>
 #include <engine/engine.hpp>
 #include <spdlog/spdlog.h>
 #include <spdlog/cfg/env.h>
@@ -49,45 +50,6 @@ std::string getenv_safe(const char *field) {
 #endif
 }
 
-static void sokol_logfunc(
-  const char* /*tag*/, // always "sapp"
-  std::uint32_t log_level, // 0=panic, 1=error, 2=warning, 3=info
-  std::uint32_t log_item_id, // SAPP_LOGITEM_*
-  const char* message_or_null, // a message string, may be nullptr in release mode
-  std::uint32_t line_nr, // line number in sokol_app.h
-  const char* filename_or_null, // source filename, may be nullptr in release mode
-  void* /*user_data*/
-)
-{
-  const char* const message = message_or_null == nullptr ? "MSG UNAVALIABLE. COMPILE WITH DEBUG" : message_or_null;
-  spdlog::level::level_enum spdlog_level;
-  switch (log_level) {
-    case 0: {
-      spdlog_level = spdlog::level::critical;
-      break;
-    }
-    case 1: {
-      spdlog_level = spdlog::level::err;
-      break;
-    }
-    case 2: {
-      spdlog_level = spdlog::level::warn;
-      break;
-    }
-    default: {
-      spdlog_level = spdlog::level::trace;
-    }
-  }
-
-  spdlog::logger* const logger = spdlog::default_logger_raw();
-  logger->log(
-    spdlog::source_loc{filename_or_null, static_cast<int>(line_nr), nullptr},
-    spdlog_level,
-
-    "log item id: {}, msg: {}", log_item_id, message
-  );
-}
-
 static std::shared_ptr<flecs::world> g_world = nullptr;
 static int g_argc = 0;
 static char** g_argv = nullptr;
@@ -98,9 +60,10 @@ void engine_main(flecs::world&);
 
 static void init_cb() {
   g_world = engine::create_world(g_argc, g_argv);
+  g_world->add<engine::SokolAppContext>();
   engine_main(*g_world);
 
-  sg_setup({
+  /*sg_setup({
     .logger = {
       .func = sokol_logfunc
     },
@@ -111,11 +74,11 @@ static void init_cb() {
     .ini_filename = "imgui.ini"
   });
 
-  init_style(ImGui::GetStyle());
+  init_style(ImGui::GetStyle());*/
 
 
 
-  g_world->add<engine::debug::ImGuiContext>();
+  //g_world->add<engine::debug::ImGuiContext>();
 
   g_pass_action.colors[0].action = SG_ACTION_CLEAR;
   g_pass_action.colors[0].value = {0.1f, 0.1f, 0.1f, 1.0f};
@@ -125,18 +88,18 @@ static void cleanup_cb() {
   g_world->quit();
   g_world = nullptr;
 
-  simgui_shutdown();
-  sg_shutdown();
+  //simgui_shutdown();
+  //sg_shutdown();
 };
 
 static void frame_cb() {
   const float delta_time = sapp_frame_duration();
 
   //imgui prepare
-  const int width = sapp_width();
-  const int height = sapp_height();
+  //const int width = sapp_width();
+  //const int height = sapp_height();
 
-  simgui_new_frame({width, height, delta_time, sapp_dpi_scale()});
+  //simgui_new_frame({width, height, delta_time, sapp_dpi_scale()});
   //update world
   bool is_countinue = engine::update_world(g_world, delta_time);
   if (!is_countinue) {
@@ -144,18 +107,17 @@ static void frame_cb() {
   }
 
   //render
-  sg_begin_default_pass(&g_pass_action, width, height);
+  /*sg_begin_default_pass(&g_pass_action, width, height);
   simgui_render();
   sg_end_pass();
-  sg_commit();
+  sg_commit();*/
 };
 
 void event_cb(const sapp_event* event) {
-  simgui_handle_event(event);
+  //simgui_handle_event(event);
 }
 
 sapp_desc sokol_main(int argc, char* argv[]) {
-  SPDLOG_INFO("HI DUDDLES");
   g_argc = argc;
   g_argv = argv;
 
@@ -182,7 +144,7 @@ sapp_desc sokol_main(int argc, char* argv[]) {
     //.high_dpi = false
     .window_title = "engine",
     .logger = {
-      .func = sokol_logfunc
+      .func = engine::sokol_logfunc
     },
 
     .win32_console_utf8 = true,

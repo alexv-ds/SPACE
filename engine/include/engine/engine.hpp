@@ -27,6 +27,8 @@ inline bool update_world(const std::shared_ptr<flecs::world>& world, const float
  * @brief Singleton компонент, если установлен, то доступено управление окном sokol app.
  */
 struct SokolAppContext {};
+
+struct SokolGfxContext {};
   
 } //namespace engine
 
