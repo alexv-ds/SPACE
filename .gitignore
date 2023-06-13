@@ -36,3 +36,6 @@ build
 
 #imgui settings file
 imgui.ini
+
+#CLion build dirs
+cmake-build*/
