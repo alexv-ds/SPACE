@@ -172,7 +172,7 @@ constexpr Color rgb8_to_color(std::uint8_t r, std::uint8_t g, std::uint8_t b) {
 [[maybe_unused]] constexpr const Color white = rgb8_to_color(255,255,255);
 [[maybe_unused]] constexpr const Color whitesmoke = rgb8_to_color(245,245,245);
 [[maybe_unused]] constexpr const Color yellow = rgb8_to_color(255,255,0);
-[[maybe_unused]] constexpr const Color yellowgreen = rgb8_to_color(154,205,50);s
+[[maybe_unused]] constexpr const Color yellowgreen = rgb8_to_color(154,205,50);
 
 } //namespace::color
 
