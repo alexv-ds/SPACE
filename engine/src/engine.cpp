@@ -6,7 +6,7 @@
 namespace engine {
 
 static void import_core(flecs::world& world) {
-  auto scope_guard = world.scope(
+  [[maybe_unused]] auto scope_guard = world.scope(
     world.entity("engine").add(flecs::Module)
   );
 
