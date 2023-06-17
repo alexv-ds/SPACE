@@ -1,5 +1,6 @@
-#include <engine/graphics/canvas.hpp>
-#include <engine/graphics/color.hpp>
+#include <flecs.h>
+/*#include <engine/graphics/canvas.hpp>
+#include "engine/world/color.hpp"
 
 #include "graphics.hpp"
 
@@ -15,7 +16,9 @@ engine::Graphics::Graphics(flecs::world& world) {
     .member<decltype(Color::b)>("b");
 
   world.component<Transparency>()
-    .member<decltype(Transparency::a)>("a");
+    .member<decltype(Transparency::alpha)>("alpha");
 
   world.component<Canvas>();
-}
+}*/
+
+//engine::Graphics::Graphics(flecs::world& world) {};

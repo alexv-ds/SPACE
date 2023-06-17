@@ -5,5 +5,9 @@
     <libraryRoots>
       <file path="$PROJECT_DIR$/dep" />
     </libraryRoots>
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/build" />
+      <file path="$PROJECT_DIR$/engine-old" />
+    </excludeRoots>
   </component>
 </project>

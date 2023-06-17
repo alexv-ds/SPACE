@@ -1,6 +1,6 @@
 message("----- CONFIGURING SOKOL -----")
 
-set(ENGINE_SOKOL_GFX_BACKEND "glcore3.3" CACHE STRING "sokol render backend")
+set(ENGINE_SOKOL_GFX_BACKEND "d3d11" CACHE STRING "sokol render backend")
 set_property(CACHE ENGINE_SOKOL_GFX_BACKEND PROPERTY STRINGS
  "glcore3.3" "gles3" "d3d11" "metal" "wgpu" "dummy backend"
 )
@@ -24,3 +24,14 @@ elseif(ENGINE_SOKOL_GFX_BACKEND STREQUAL "dummy backend")
 else()
   message(FATAL_ERROR "'${ENGINE_SOKOL_GFX_BACKEND}' - is unknown sokol gfx backend")
 endif()
+
+if(UNIX)
+  find_package(X11 REQUIRED)
+  target_link_libraries(engine-sokol INTERFACE X11::X11 X11::Xcursor X11::Xi)
+
+  find_package(OpenGL REQUIRED)
+  target_link_libraries(engine-sokol INTERFACE OpenGL::GL)
+endif()
+
+message("-------------------------------------")
+message(${CMAKE_BINARY_DIR})

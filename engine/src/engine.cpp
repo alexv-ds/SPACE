@@ -1,7 +1,7 @@
 #include <engine/engine.hpp>
 #include "debug.hpp"
-#include "internal-modules/sokol-gfx.hpp"
 #include "graphics.hpp"
+#include "modules.hpp"
 
 namespace engine {
 
@@ -13,8 +13,12 @@ static void import_core(flecs::world& world) {
   world.component<SokolAppContext>();
   world.component<SokolGfxContext>();
 
-  world.import<internal::module::SokolGfx>();
-  world.import<Graphics>();
+  //world.import<internal::module::SokolGfx>();
+  //world.import<Graphics>();
+
+  world.import<Reflection>();
+  world.import<World>();
+
 }
 
 std::shared_ptr<flecs::world> create_world(int argc, char* argv[]) {

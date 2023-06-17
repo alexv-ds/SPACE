@@ -25,6 +25,7 @@ find_package(FLECS REQUIRED)
 find_package(SPDLOG REQUIRED)
 find_package(SOKOL REQUIRED)
 find_package(IMGUI REQUIRED)
+find_package(GLM REQUIRED)
 
 
 add_subdirectory(engine)
@@ -33,7 +34,7 @@ add_subdirectory(engine-entry)
 #public libs
 
 
-#find_package(GLM REQUIRED)
+
 
 
 #add_executable(main
@@ -69,6 +70,6 @@ add_executable(game
   game/powernet.cpp
 #  engine/engine/setup_spdlog.cpp
 #  game/atmospherics.cpp
-)
+  game/imgui-tools.hpp)
 #target_link_libraries(game PRIVATE flecs::flecs_static spdlog::spdlog)
 target_link_libraries(game PRIVATE engine::engine engine::entry engine::imgui)
