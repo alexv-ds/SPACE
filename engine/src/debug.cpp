@@ -1,4 +1,5 @@
 #include <engine/debug/imgui.hpp>
+#include <engine/lib/log.hpp>
 #include "debug.hpp"
 
 namespace engine::debug {
@@ -23,6 +24,7 @@ engine::Debug::Debug(flecs::world& world) {
 
   //systems
   world.system<const ImGuiWindow>("system::ShowImguiWindow")
+    .kind(flecs::OnStore)
     .with<ImGuiContext>().singleton()
     .with<ImGuiOpened>()
     .each(ShowImguiWindow);

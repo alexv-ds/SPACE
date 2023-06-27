@@ -14,7 +14,7 @@ add_library(engine
   src/world/components.cpp
   include/engine/reflection.hpp
   src/reflection.cpp
-  include/engine/lib/assert.hpp include/engine/world/world.hpp src/world/systems.cpp src/world/observers.cpp)
+  include/engine/lib/assert.hpp include/engine/world/world.hpp src/world/systems.cpp src/world/observers.cpp include/engine/lib/entry_consts.hpp include/engine/lib/mat3_decompose.hpp include/engine/command.hpp src/command.cpp)
 
 add_library(engine::engine ALIAS engine)
 

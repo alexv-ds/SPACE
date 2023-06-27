@@ -5,25 +5,25 @@ namespace engine::render_backend {
 void init_phases(flecs::world& world) {
   [[maybe_unused]] auto scope = world.scope(world.entity("phase"));
 
-  world.component<PhaseRenderBeginPre>()
+  world.component<PhaseBeginPre>()
     .add(flecs::Phase)
     .depends_on(flecs::OnStore);
 
-  world.component<PhaseRenderBegin>()
+  world.component<PhaseBegin>()
     .add(flecs::Phase)
-    .depends_on<PhaseRenderBeginPre>();
+    .depends_on<PhaseBeginPre>();
 
-  world.component<PhaseRenderOrderedPre>()
+  world.component<PhaseStoreOrderedPre>()
     .add(flecs::Phase)
-    .depends_on<PhaseRenderBegin>();
+    .depends_on<PhaseBegin>();
 
-  world.component<PhaseRenderOrdered>()
+  world.component<PhaseStoreOrdered>()
     .add(flecs::Phase)
-    .depends_on<PhaseRenderOrderedPre>();
+    .depends_on<PhaseStoreOrderedPre>();
 
   world.component<PhaseCommitPre>()
     .add(flecs::Phase)
-    .depends_on<PhaseRenderOrdered>();
+    .depends_on<PhaseStoreOrdered>();
 
   world.component<PhaseCommit>()
     .add(flecs::Phase)

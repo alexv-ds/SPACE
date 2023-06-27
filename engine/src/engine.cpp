@@ -18,7 +18,7 @@ static void import_core(flecs::world& world) {
 
   world.import<Reflection>();
   world.import<World>();
-
+  world.import<CommandModule>();
 }
 
 std::shared_ptr<flecs::world> create_world(int argc, char* argv[]) {

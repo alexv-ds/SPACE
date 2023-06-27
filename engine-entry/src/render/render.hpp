@@ -10,11 +10,11 @@ constexpr world::Color buffer_clear_color = {0.2, 0.2, 0.2};
 
 } //end of namespace consts;
 
-struct PhaseRenderBeginPre {};
-struct PhaseRenderBegin {};
+struct PhaseBeginPre {};
+struct PhaseBegin {};
 
-struct PhaseRenderOrderedPre {};
-struct PhaseRenderOrdered {};
+struct PhaseStoreOrderedPre {};
+struct PhaseStoreOrdered {};
 
 struct PhaseCommitPre {};
 struct PhaseCommit {};

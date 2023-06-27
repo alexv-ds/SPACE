@@ -2,6 +2,7 @@
 #include <flecs.h>
 #include <imgui.h>
 #include <engine/debug/imgui.hpp>
+#include "powernet.hpp"
 
 void MetricsWindow(flecs::entity e) {
   bool is_open = true;
@@ -147,7 +148,7 @@ void PowernetTool(flecs::entity e) {
   }
 }
 
-void init_imgui(flecs::world& world) {
+void init_imgui_tools(flecs::world& world) {
 
   world.entity("imgui_tools").set_doc_color("#DD00DD");
 

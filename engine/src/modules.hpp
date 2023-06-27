@@ -11,4 +11,8 @@ struct Reflection {
   explicit Reflection(flecs::world&);
 };
 
+struct CommandModule {
+  explicit CommandModule(flecs::world&);
+};
+
 } //end of namespace engine

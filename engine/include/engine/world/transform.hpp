@@ -4,8 +4,8 @@
 namespace engine::world {
 
 struct Scale {
-  float x = 0.0f;
-  float y = 0.0f;
+  float x = 1.0f;
+  float y = 1.0f;
 };
 
 struct Rotation {

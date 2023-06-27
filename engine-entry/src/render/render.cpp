@@ -16,6 +16,4 @@ engine::RenderBackend::RenderBackend(flecs::world& world) {
   render_backend::init_components(world);
   render_backend::init_observers(world);
   render_backend::init_systems(world);
-
-  ENGINE_WARN("ХАЙ ДЮДЛС");
 }

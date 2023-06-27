@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/cfg/env.h>
 #include <cmath>
+#include <engine/debug/imgui.hpp>
 
 #ifdef _WIN32
 
@@ -22,6 +23,10 @@
 
 #include <sokol_app.h>
 #include <sokol_glue.h>
+
+#include <imgui.h>
+#define SOKOL_IMGUI_IMPL
+#include <util/sokol_imgui.h>
 
 #include "render/render.hpp"
 
@@ -71,50 +76,36 @@ static void init2() {
       std::exit(EXIT_FAILURE);
     }
   }
+
+  //imgui
+  {
+    simgui_desc_t simgui_desc = {
+      .ini_filename = "imgui.ini"
+    };
+    simgui_setup(&simgui_desc);
+    g_world->add<engine::debug::ImGuiContext>();
+  }
 }
 
 static void frame2() {
-  // Get current window size.
-  const int width = sapp_width();
-  const int height = sapp_height();
-
-  //update world
   bool is_countinue = engine::update_world(g_world, static_cast<float>(sapp_frame_duration()));
   if (!is_countinue) {
     sapp_request_quit();
   }
-
-  // Draw an animated rectangle that rotates and changes its colors.
-  const float time = static_cast<float>(sapp_frame_count()) * static_cast<float>(sapp_frame_duration());
-  const float r = std::sin(time) * 0.5f + 0.5f;
-  const float g = std::cos(time) * 0.5f + 0.5f;
-  sgp_set_color(r, g, 0.3f, 1.0f);
-  //sgp_rotate_at(time*20.0f, 0.5f, 0.5f);
-  //sgp_draw_filled_rect(-0.5f, -0.5f, 1.0f, 1.0f);
-
-  sgp_draw_filled_rect(-0.5f, -0.5f, 1.0f, 1.0f);
-
-
-
-
-  // Begin alpha render pass.
-  sg_pass_action pass_action = {};
-  sg_begin_default_pass(pass_action, width, height);
-  // Dispatch all draw commands to Sokol GFX.
-  sgp_flush();
-  // Finish alpha draw command queue, clearing it.
-  sgp_end();
-  // End render pass.
-  sg_end_pass();
-  // Commit Sokol render.
-  sg_commit();
 }
 
 static void cleanup2() {
   // Cleanup Sokol GP and Sokol GFX resources.
   sgp_shutdown();
+  simgui_shutdown();
   sg_shutdown();
 }
+
+static void input(const sapp_event* event) {
+  simgui_handle_event(event);
+}
+
+
 
 sapp_desc sokol_main(int argc, char* argv[]) {
   g_argc = argc;
@@ -129,5 +120,12 @@ sapp_desc sokol_main(int argc, char* argv[]) {
   if (!getenv_safe("SPDLOG_LEVEL").empty()) {
     spdlog::cfg::load_env_levels();
   }
-  return {.init_cb = init2, .frame_cb = frame2, .cleanup_cb = cleanup2, .sample_count = 4, .window_title = "Hi duddles"};
+  return {
+    .init_cb = init2,
+    .frame_cb = frame2,
+    .cleanup_cb = cleanup2,
+    .event_cb = input,
+    .sample_count = 4,
+    .window_title = "Hi duddles"
+  };
 }
