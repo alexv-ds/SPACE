@@ -1,12 +1,15 @@
 #include <string>
 #include <cstdint>
 #include <cstdlib>
-#include "engine/lib/log.hpp"
+#include <engine/lib/log.hpp>
+#include <engine/lib/entry_consts.hpp>
 #include <engine/engine.hpp>
+#include <engine/world/world.hpp>
 #include <spdlog/spdlog.h>
 #include <spdlog/cfg/env.h>
 #include <cmath>
 #include <engine/debug/imgui.hpp>
+#include <glm/vec2.hpp>
 
 #ifdef _WIN32
 
@@ -85,6 +88,11 @@ static void init2() {
     simgui_setup(&simgui_desc);
     g_world->add<engine::debug::ImGuiContext>();
   }
+
+  //init camera
+  g_world->entity(engine::entry_consts::main_camera_name)
+    .add<engine::world::WorldObject>()
+    .add<engine::world::HandleIntersections>();
 }
 
 static void frame2() {
@@ -92,9 +100,33 @@ static void frame2() {
   if (!is_countinue) {
     sapp_request_quit();
   }
+
+/*  const float camera_base_x = 2;
+  const float camera_base_y = 2;
+  const float ratio = sapp_widthf() / sapp_heightf();
+  auto* camera_scale = g_world->entity(engine::entry_consts::main_camera_name)
+    .get_mut<engine::world::Scale>();
+  camera_scale->x = camera_base_x * ratio;
+  camera_scale->y = camera_base_y;*/
+
+  glm::vec2 camera_base_size = glm::vec2(1.0f);
+  flecs::entity main_camera = g_world->entity(engine::entry_consts::main_camera_name);
+  {
+    const auto* const camera_scale = main_camera.get<engine::world::Scale>();
+    if (camera_scale) {
+      camera_base_size.x = camera_scale->x;
+      camera_base_size.y = camera_scale->y;
+    }
+  }
+  const float ratio = sapp_widthf() / sapp_heightf();
+  auto* camera_world_object = main_camera.get_mut<engine::world::WorldObject>();
+  camera_world_object->size_y = 1.0f;
+  camera_world_object->size_x = 1.0f * ratio;
+
 }
 
 static void cleanup2() {
+  g_world = nullptr;
   // Cleanup Sokol GP and Sokol GFX resources.
   sgp_shutdown();
   simgui_shutdown();
@@ -102,7 +134,37 @@ static void cleanup2() {
 }
 
 static void input(const sapp_event* event) {
-  simgui_handle_event(event);
+  if (!g_world) {
+    return;
+  }
+
+  if (simgui_handle_event(event)) {
+    return;
+  }
+
+  flecs::entity main_camera = g_world->entity(engine::entry_consts::main_camera_name);
+
+  if (main_camera.has<engine::world::Position>()) {
+    auto position = main_camera.get_mut<engine::world::Position>();
+    const float move_speed = 0.1f;
+    switch (event->key_code) {
+      case SAPP_KEYCODE_W: {
+        position->y += move_speed;
+        break;
+      }
+      case SAPP_KEYCODE_S: {
+        position->y -= move_speed;
+        break;
+      }
+      case SAPP_KEYCODE_D: {
+        position->x += move_speed;
+        break;
+      }
+      case SAPP_KEYCODE_A: {
+        position->x -= move_speed;
+      }
+    }
+  }
 }
 
 

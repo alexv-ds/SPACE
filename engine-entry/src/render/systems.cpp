@@ -33,7 +33,7 @@ static void RenderBegin(flecs::iter it) {
   //set project
   sgp_project(-0.5f, 0.5f, 0.5f, -0.5f);
   {
-    flecs::entity main_camera = world.entity(entry_consts::main_camera_name);
+    /*flecs::entity main_camera = world.entity(entry_consts::main_camera_name);
     const auto* const p_position = main_camera.get<world::Position>();
     const auto* const p_rotation = main_camera.get<world::Rotation>();
     const auto* const p_scale = main_camera.get<world::Scale>();
@@ -41,10 +41,26 @@ static void RenderBegin(flecs::iter it) {
     const world::Position
       position = p_position ? *p_position : world::Position{.x = 0.0f, .y = 0.0f};
     const world::Rotation rotation = p_rotation ? *p_rotation : world::Rotation{.angle = 0.0f};
-    const world::Scale scale = p_scale ? *p_scale : world::Scale{.x = 1.0f, .y = 1.0f};
+    const world::Scale scale = p_scale ? *p_scale : world::Scale{.x = 1.0f, .y = 1.0f};*/
+
+    glm::vec2 position(0.0f);
+    glm::vec2 scale(1.0f);
+    float rotation = 0.0f;
+
+    {
+      const world::WorldObject* const camera_world_object = world.entity(entry_consts::main_camera_name)
+        .get<world::WorldObject>();
+      if (camera_world_object) {
+        rotation = camera_world_object->global_rotation.angle;
+        position.x = camera_world_object->global_position.x;
+        position.y = camera_world_object->global_position.y;
+        scale.x = camera_world_object->global_scale.x * camera_world_object->size_x;
+        scale.y = camera_world_object->global_scale.y * camera_world_object->size_y;
+      }
+    }
 
     sgp_translate(-position.x, -position.y);
-    sgp_rotate(rotation.angle);
+    sgp_rotate(rotation);
     sgp_scale(1.0f / scale.x, 1.0f / scale.y);
   }
 
@@ -56,38 +72,6 @@ static void RenderBegin(flecs::iter it) {
 
   sg_pass_action pass_action = {};
   sg_begin_default_pass(pass_action, width, height);
-}
-
-static void StoreOrdered(flecs::iter it,
-                         const world::WorldObject* world_object,
-                         const world::Position* position,
-                         const world::Rotation* rotation, //optional
-                         const world::Scale* scale, //optional
-                         const world::Transparency* transparency, //optional
-                         const world::Color* color, //optional
-                         const world::Layer*) //optional
-{
-  for (auto i : it) {
-    sgp_push_transform();
-    sgp_translate(position->x, position->y);
-
-    if (rotation) {
-      sgp_rotate(-rotation->angle);
-    }
-
-    if (scale) {
-      sgp_scale(scale->x, scale->y);
-    }
-
-    const world::Color draw_color = color ? color[i] : world::color::white;
-    const float alpha = transparency ? transparency[i].alpha : 1.0f;
-    sgp_set_color(draw_color.r, draw_color.g, draw_color.b, alpha);
-    sgp_draw_filled_rect(-world_object->size_x / 2.0f,
-                         -world_object->size_y / 2.0f,
-                         world_object->size_x,
-                         world_object->size_y);
-    sgp_pop_transform();
-  }
 }
 
 static void Commit(flecs::iter it) {
@@ -104,6 +88,30 @@ static void ImguiNewFrame(flecs::iter it) {
   simgui_new_frame({width, height, sapp_frame_duration(), sapp_dpi_scale()});
 }
 
+static void StoreOrdered_V2(flecs::iter it,
+                            const world::WorldObject* object,
+                            const world::Transparency* transparency, //optional
+                            const world::Color* color) //optional
+{
+  for (auto i : it) {
+    sgp_push_transform();
+    sgp_translate(object[i].global_position.x, object[i].global_position.y);
+    sgp_rotate(-object[i].global_rotation.angle);
+    sgp_scale(object[i].global_scale.x, object[i].global_scale.y);
+
+    const world::Color draw_color = color ? color[i] : world::color::white;
+    const float alpha = transparency ? transparency[i].alpha : 1.0f;
+    sgp_set_color(draw_color.r, draw_color.g, draw_color.b, alpha);
+
+    sgp_draw_filled_rect(-object[i].size_x / 2.0f,
+                         -object[i].size_y / 2.0f,
+                         object[i].size_x,
+                         object[i].size_y);
+    sgp_pop_transform();
+  }
+
+}
+
 void init_systems(flecs::world & world) {
   [[maybe_unused]] auto scope = world.scope(world.entity("system"));
 
@@ -111,7 +119,7 @@ void init_systems(flecs::world & world) {
     .kind<PhaseBegin>()
     .iter(RenderBegin);
 
-  world.system<const world::WorldObject,
+/*  world.system<const world::WorldObject,
                const world::Position,
                const world::Rotation,
                const world::Scale,
@@ -125,8 +133,18 @@ void init_systems(flecs::world & world) {
     .arg(6).optional()
     .arg(7).optional()
     .with<world::Renderable>()
-      //.order_by(layer_comparator)
-    .iter(StoreOrdered);
+    //.order_by(layer_comparator)
+    .iter(StoreOrdered);*/
+
+  world.system<const world::WorldObject,
+               const world::Transparency,
+               const world::Color>("StoreOrdered")
+    .kind<PhaseStoreOrdered>()
+    .arg(2).optional()
+    .arg(3).optional()
+    .with<world::Renderable>()
+    .with<world::IntersectsWith>().second(world.entity(entry_consts::main_camera_name))
+    .iter(StoreOrdered_V2);
 
   world.system("Commit")
     .kind<PhaseCommit>()

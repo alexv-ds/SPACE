@@ -56,7 +56,7 @@ Reflection::Reflection(flecs::world& world) {
     .glm = {
       .vec2 = world.entity<glm::vec2>(),
       .vec3 = world.entity<glm::vec3>(),
-      .mat3 = world.entity<glm::mat3>(),
+      //.mat3 = world.entity<glm::mat3>(),
       .mat2x3 = world.entity<glm::mat2x3>()
     },
     .std = {

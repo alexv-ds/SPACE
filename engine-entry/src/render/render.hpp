@@ -6,7 +6,7 @@ namespace engine::render_backend {
 
 namespace consts {
 
-constexpr world::Color buffer_clear_color = {0.2, 0.2, 0.2};
+constexpr world::Color buffer_clear_color = {0.2f, 0.2f, 0.2f};
 
 } //end of namespace consts;
 

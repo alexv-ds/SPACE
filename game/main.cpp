@@ -8,17 +8,22 @@
 
 #include "imgui-tools.hpp"
 
+struct MyCommand {
+  int hi = 123;
+};
+
 void engine_main(flecs::world & world) {
   world.set<flecs::Rest>({});
-  world.import<flecs::monitor>
-  ();
-  init_imgui_tools(world);
+  world.import<flecs::monitor>();
+
+  //init_imgui_tools(world);
 
   world.entity(engine::entry_consts::main_camera_name)
     .set<engine::world::Position>({.x=0, .y=0})
-    .set<engine::world::Scale>({.x=2, .y=2})
+    .set<engine::world::Scale>({.x=1, .y=1})
     .add<engine::world::Rotation>();
 
+/*
   world.entity("::test::drawable")
     .add<engine::world::WorldObject>()
     .add<engine::world::Renderable>()
@@ -26,7 +31,8 @@ void engine_main(flecs::world & world) {
     .set<engine::world::Position>({.x=0, .y=0})
     .set<engine::world::Scale>({.x=1.0f, .y=1.0f})
       //.set<engine::world::Rotation>({.angle=0.1f})
-    .add<engine::world::IntersectsWith>(world.entity(engine::entry_consts::main_camera_name));
+    ;
+*/
 
   world.system("AutoExitSystem")
     .iter([](flecs::iter it) {
@@ -49,17 +55,45 @@ void engine_main(flecs::world & world) {
       )");
     ENGINE_INFO("from json result: {}", result ?: "nullptr");*/
 
-  {
-    [[maybe_unused]] auto scope = world.scope(world.entity("commandtest"));
+  //-------------------------------------------------
+  /*{
+    using namespace engine::world;
+    [[maybe_unused]] auto scope = world.scope(world.entity("test_scope"));
 
-    /*auto prev_entity = flecs::entity::null();
-    for (int i = 0; i < 10; ++i) {
-      auto entity = world.entity((std::string("entity_") + std::to_string(i + 1)).c_str());
-      if (prev_entity) {
-        entity.add<engine::command::ConnectionNext>(prev_entity);
-      }
-      prev_entity = entity;
-    }*/
+    auto parent = world.entity("parent")
+      .add<WorldObject>()
+      .add<Position>()
+      .add<Scale>()
+      .add<Rotation>();
+
+    auto child = world.entity("child")
+      .child_of(parent);
+
+    world.entity("child_child")
+      .add<WorldObject>()
+      .add<Position>()
+      .add<Scale>()
+      .add<Rotation>()
+      .child_of(child);
+  }*/
+
+  {
+    using namespace engine::world;
+    [[maybe_unused]] auto scope = world.scope(world.entity("test_intersections"));
+
+    world.entity("object_1")
+      .set<WorldObject>({.size_x = .5f, .size_y = .5f})
+      .set<Scale>({.x = 2, .y = 2})
+      .set<Position>({.x = 0.5f})
+      .set<Color>(color::red)
+      .add<HandleIntersections>()
+      .add<Renderable>();
+
+    world.entity("object_2")
+      .add<WorldObject>()
+      .add<Position>()
+      //.add<HandleIntersections>()
+      .add<Renderable>();
   }
 
 }

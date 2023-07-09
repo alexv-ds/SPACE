@@ -5,6 +5,7 @@
 #include <engine/world/transform.hpp>
 #include <engine/world/spatial.hpp>
 #include <engine/world/graphics.hpp>
+#include "spatial/component.hpp"
 
 namespace engine::world {
 
@@ -12,9 +13,6 @@ void init_components(flecs::world& world) {
   const auto* reflected = world.get<reflection::ReflectedTypes>();
   ENGINE_ASSERT(reflected != nullptr);
 
-  world.component<WorldObject>()
-    .member<decltype(WorldObject::size_x)>("size_x")
-    .member<decltype(WorldObject::size_y)>("size_y");
 
   world.component<Scale>()
     .member<decltype(Scale::x)>("x")
@@ -27,12 +25,19 @@ void init_components(flecs::world& world) {
     .member<decltype(Position::x)>("x")
     .member<decltype(Position::y)>("y");
 
-  world.component<Transform>()
-    .member(reflected->glm.mat3, "matrix");
-  ;
+  world.component<WorldObject>()
+    .member<decltype(WorldObject::size_x)>("size_x")
+    .member<decltype(WorldObject::size_y)>("size_y")
+    .member<decltype(WorldObject::global_position)>("global_position")
+    .member<decltype(WorldObject::global_scale)>("global_scale")
+    .member<decltype(WorldObject::global_rotation)>("global_rotation");
+
+  world.component<Transform>();
 
   world.component<HandleIntersections>();
-  world.component<IntersectsWith>();
+  world.component<InitIntersections>();
+  world.component<IntersectsWith>()
+    .add(flecs::Symmetric);
 
   world.component<Renderable>();
   world.component<Icon>()
@@ -49,6 +54,8 @@ void init_components(flecs::world& world) {
 
   world.component<Transparency>()
     .member<decltype(Transparency::alpha)>("alpha");
+
+  world.component<SpatialInternal>();
 }
 
 } //end of namespace engine::world

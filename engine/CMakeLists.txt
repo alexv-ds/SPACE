@@ -14,7 +14,7 @@ add_library(engine
   src/world/components.cpp
   include/engine/reflection.hpp
   src/reflection.cpp
-  include/engine/lib/assert.hpp include/engine/world/world.hpp src/world/systems.cpp src/world/observers.cpp include/engine/lib/entry_consts.hpp include/engine/lib/mat3_decompose.hpp include/engine/command.hpp src/command.cpp)
+  include/engine/lib/assert.hpp include/engine/world/world.hpp src/world/systems.cpp src/world/observers.cpp include/engine/lib/entry_consts.hpp include/engine/lib/mat3_decompose.hpp include/engine/command.hpp src/command.cpp src/world/spatial/SpatialSpace.hpp src/world/spatial/SpatialSpace.cpp src/world/spatial/component.hpp src/world/spatial/LooseQuadtree-impl.h src/world/spatial/LooseQuadtree.h src/world/spatial/TreeObject.hpp src/world/spatial/TreeObject.cpp src/world/spatial/bbox_calculation.hpp src/world/spatial/bbox_calculation.cpp)
 
 add_library(engine::engine ALIAS engine)
 

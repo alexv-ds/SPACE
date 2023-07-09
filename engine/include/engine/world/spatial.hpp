@@ -8,6 +8,7 @@ namespace engine::world {
  * на сущность у которой есть компонент HandleIntersections
  */
 struct HandleIntersections {};
+struct InitIntersections {};
 struct IntersectsWith {}; ///Relation
 
 } //end of namespace engine::world
