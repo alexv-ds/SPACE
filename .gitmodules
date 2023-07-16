@@ -13,9 +13,6 @@
 [submodule "dep/sokol"]
 	path = dep/sokol
 	url = https://github.com/floooh/sokol.git
-[submodule "dep/loose_quadtree"]
-	path = dep/loose_quadtree
-	url = https://github.com/gerazo/loose_quadtree.git
 [submodule "dep/Chipmunk2D"]
 	path = dep/Chipmunk2D
 	url = https://github.com/slembcke/Chipmunk2D.git
