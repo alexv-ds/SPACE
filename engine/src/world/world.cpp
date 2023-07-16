@@ -1,6 +1,5 @@
 #include <memory>
 #include <engine/world/world.hpp>
-#include "spatial/SpatialSpace.hpp"
 #include "../modules.hpp"
 
 namespace engine {
@@ -11,9 +10,7 @@ void init_systems(flecs::world&);
 void init_observers(flecs::world&);
 }
 
-World::World(flecs::world& world)
-  : space(std::make_shared<world::SpatialSpace>())
-{
+World::World(flecs::world& world) {
   world.import<flecs::units>();
   world.import<Reflection>();
   world.module<World>("world");

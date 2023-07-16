@@ -59,7 +59,7 @@ static void RenderBegin(flecs::iter it) {
       }
     }
 
-    sgp_translate(-position.x, -position.y);
+    sgp_translate(-position.x / scale.x, -position.y / scale.y);
     sgp_rotate(rotation);
     sgp_scale(1.0f / scale.x, 1.0f / scale.y);
   }

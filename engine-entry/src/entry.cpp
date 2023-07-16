@@ -96,11 +96,6 @@ static void init2() {
 }
 
 static void frame2() {
-  bool is_countinue = engine::update_world(g_world, static_cast<float>(sapp_frame_duration()));
-  if (!is_countinue) {
-    sapp_request_quit();
-  }
-
 /*  const float camera_base_x = 2;
   const float camera_base_y = 2;
   const float ratio = sapp_widthf() / sapp_heightf();
@@ -122,6 +117,11 @@ static void frame2() {
   auto* camera_world_object = main_camera.get_mut<engine::world::WorldObject>();
   camera_world_object->size_y = 1.0f;
   camera_world_object->size_x = 1.0f * ratio;
+
+  bool is_countinue = engine::update_world(g_world, static_cast<float>(sapp_frame_duration()));
+  if (!is_countinue) {
+    sapp_request_quit();
+  }
 
 }
 

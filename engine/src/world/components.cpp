@@ -5,7 +5,6 @@
 #include <engine/world/transform.hpp>
 #include <engine/world/spatial.hpp>
 #include <engine/world/graphics.hpp>
-#include "spatial/component.hpp"
 
 namespace engine::world {
 
@@ -54,8 +53,6 @@ void init_components(flecs::world& world) {
 
   world.component<Transparency>()
     .member<decltype(Transparency::alpha)>("alpha");
-
-  world.component<SpatialInternal>();
 }
 
 } //end of namespace engine::world
