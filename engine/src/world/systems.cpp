@@ -79,6 +79,50 @@ static void ApplyGlobalPosition(flecs::iter it,
   }
 }
 
+static void ApplyGlobalScale(flecs::iter it,
+                             const Scale* local,
+                             Scale* global,
+                             const Scale* parent_global)
+{
+  if (!it.changed()) {
+    it.skip();
+    return;
+  }
+
+  if (parent_global) {
+    for (auto i : it) {
+      global[i] = parent_global[i];
+      global[i].x *= local[i].x;
+      global[i].y *= local[i].y;
+    }
+  } else {
+    for (auto i : it) {
+      global[i] = local[i];
+    }
+  }
+}
+
+static void ApplyGlobalRotation(flecs::iter it,
+                             const Rotation* local,
+                             Rotation* global,
+                             const Rotation* parent_global)
+{
+  if (!it.changed()) {
+    it.skip();
+    return;
+  }
+
+  if (parent_global) {
+    for (auto i : it) {
+      global[i].angle = parent_global[i].angle + local[i].angle;
+    }
+  } else {
+    for (auto i : it) {
+      global[i] = local[i];
+    }
+  }
+}
+
 void init_systems(flecs::world& world) {
   [[maybe_unused]] auto scope = world.scope(world.entity("system"));
 
@@ -95,6 +139,18 @@ void init_systems(flecs::world& world) {
     .arg(2).second<Global>()
     .arg(3).cascade(flecs::ChildOf).optional().second<Global>()
     .iter(ApplyGlobalPosition);
+
+  world.system<const Scale, Scale, const Scale>("ApplyGlobalScale")
+    .kind(flecs::PostUpdate)
+    .arg(2).second<Global>()
+    .arg(3).cascade(flecs::ChildOf).optional().second<Global>()
+    .iter(ApplyGlobalScale);
+
+  world.system<const Rotation, Rotation, const Rotation>("ApplyGlobalRotation")
+    .kind(flecs::PostUpdate)
+    .arg(2).second<Global>()
+    .arg(3).cascade(flecs::ChildOf).optional().second<Global>()
+    .iter(ApplyGlobalRotation);
 }
 
 } //end of engine::world

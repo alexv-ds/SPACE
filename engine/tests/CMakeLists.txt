@@ -2,8 +2,8 @@ include(CTest)
 include(Catch)
 
 add_executable(engine-tests-world
-  world/delme.cpp
-  world/ApplyGlobalPosition.test.cpp helpers/helpers.hpp)
+  world/InitGlobalPosition.test.cpp
+  world/ApplyGlobalPosition.test.cpp helpers/helpers.hpp world/ApplyGlobalScale.test.cpp world/ApplyGlobalRotation.test.cpp)
 
 target_link_libraries(engine-tests-world PRIVATE
   Catch2::Catch2WithMain

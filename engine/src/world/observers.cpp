@@ -7,7 +7,7 @@
 
 namespace engine::world {
 
-static void MonitorPosition(flecs::iter& it, std::size_t i) {
+static void MonitorPositionOld(flecs::iter& it, std::size_t i) {
   flecs::entity e = it.entity(i);
   flecs::entity_t event = it.event();
   if (event == flecs::OnAdd) {
@@ -21,17 +21,42 @@ static void OnAddHandleIntersections(flecs::entity entity) {
   entity.add<InitIntersections>();
 }
 
+
+template <class T>
+static void MonitorGlobalRelation(flecs::iter& it, std::size_t i) {
+  if (it.event() == flecs::OnAdd) {
+    it.entity(i).add<T, Global>();
+  } else if (it.event() == flecs::OnRemove) {
+    it.entity(i).remove<T, Global>();
+  }
+}
+
 void init_observers(flecs::world& world) {
   [[maybe_unused]] auto scope = world.scope(world.entity("observer"));
-  world.observer("MonitorPosition")
+  world.observer("MonitorPositionOld")
     .event(flecs::Monitor)
     .with<Position>()
-    .each(MonitorPosition);
+    .each(MonitorPositionOld);
 
   world.observer("OnAddHandleIntersections")
     .event(flecs::OnAdd)
     .with<HandleIntersections>()
     .each(OnAddHandleIntersections);
+
+  world.observer("MonitorPosition")
+    .event(flecs::Monitor)
+    .with<Position>()
+    .each(MonitorGlobalRelation<Position>);
+
+  world.observer("MonitorScale")
+    .event(flecs::Monitor)
+    .with<Scale>()
+    .each(MonitorGlobalRelation<Scale>);
+
+  world.observer("MonitorRotation")
+    .event(flecs::Monitor)
+    .with<Rotation>()
+    .each(MonitorGlobalRelation<Rotation>);
 }
 
 } //end of engine::world

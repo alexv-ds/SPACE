@@ -20,7 +20,7 @@ SCENARIO("ApplyGlobalPosition applies global position") {
       THEN("(Position, Global) updates") {
         REQUIRE(e.has<Position, Global>());
         REQUIRE(e.has<Position>());
-        const Position* gloval_pos = e.get<Position, Global>();
+        const auto* gloval_pos = e.get<Position, Global>();
         REQUIRE(gloval_pos->x == 10);
         REQUIRE(gloval_pos->y == 20);
       }
@@ -42,7 +42,7 @@ SCENARIO("ApplyGlobalPosition applies global position") {
       THEN("child (Position, Global) updates") {
         REQUIRE(child.has<Position, Global>());
         REQUIRE(child.has<Position>());
-        const Position* gloval_pos = child.get<Position, Global>();
+        const auto* gloval_pos = child.get<Position, Global>();
         REQUIRE(gloval_pos->x == 10);
         REQUIRE(gloval_pos->y == 1);
       }
@@ -56,7 +56,7 @@ SCENARIO("ApplyGlobalPosition applies global position") {
       THEN("child (Position, Global) updates like run once") {
         REQUIRE(child.has<Position, Global>());
         REQUIRE(child.has<Position>());
-        const Position* gloval_pos = child.get<Position, Global>();
+        const auto* gloval_pos = child.get<Position, Global>();
         REQUIRE(gloval_pos->x == 10);
         REQUIRE(gloval_pos->y == 1);
       }
@@ -70,18 +70,18 @@ SCENARIO("ApplyGlobalPosition applies global position") {
       .add(flecs::Disabled);
 
     flecs::entity child = world->entity("child")
-      .add<Position>()
+      .set<Position>({1,1})
       .add<Position, Global>()
       .child_of(parent);
 
     WHEN("world run once") {
       engine::update_world(world);
-      THEN("child (Position, Global) not updates") {
+      THEN("child (Position, Global) updates without parent") {
         REQUIRE(child.has<Position, Global>());
         REQUIRE(child.has<Position>());
-        const Position* gloval_pos = child.get<Position, Global>();
-        REQUIRE(gloval_pos->x == 0);
-        REQUIRE(gloval_pos->y == 0);
+        const auto* gloval_pos = child.get<Position, Global>();
+        REQUIRE(gloval_pos->x == 1);
+        REQUIRE(gloval_pos->y == 1);
       }
     }
 
@@ -91,9 +91,9 @@ SCENARIO("ApplyGlobalPosition applies global position") {
       THEN("child (Position, Global) updates") {
         REQUIRE(child.has<Position, Global>());
         REQUIRE(child.has<Position>());
-        const Position* gloval_pos = child.get<Position, Global>();
-        REQUIRE(gloval_pos->x == 3);
-        REQUIRE(gloval_pos->y == 4);
+        const auto* gloval_pos = child.get<Position, Global>();
+        REQUIRE(gloval_pos->x == 4);
+        REQUIRE(gloval_pos->y == 5);
       }
     }
 
@@ -119,7 +119,7 @@ SCENARIO("ApplyGlobalPosition applies global position") {
       THEN ("child updates") {
         REQUIRE(child.has<Position, Global>());
         REQUIRE(child.has<Position>());
-        const Position* gloval_pos = child.get<Position, Global>();
+        const auto* gloval_pos = child.get<Position, Global>();
         REQUIRE(gloval_pos->x == 8);
         REQUIRE(gloval_pos->y == 9);
       }
@@ -129,12 +129,69 @@ SCENARIO("ApplyGlobalPosition applies global position") {
       empty_parent.add(flecs::Disabled);
       engine::update_world(world);
 
-      THEN ("child not updates") {
+      THEN ("child updates") {
         REQUIRE(child.has<Position, Global>());
         REQUIRE(child.has<Position>());
-        const Position* child_global_pos = child.get<Position, Global>();
-        REQUIRE(child_global_pos->x == 0);
-        REQUIRE(child_global_pos->y == 0);
+        const auto* child_global_pos = child.get<Position, Global>();
+        REQUIRE(child_global_pos->x == 8);
+        REQUIRE(child_global_pos->y == 9);
+      }
+    }
+  }
+
+  GIVEN("entity with Position, (Position, Global) and parent_head, parent_middle") {
+    auto parent_top = world->entity()
+      .set<Position>({1,1})
+      .add<Position, Global>();
+
+    auto parent_middle = world->entity()
+      .set<Position>({2,2})
+      .add<Position, Global>()
+      .child_of(parent_top);
+
+    auto child = world->entity()
+      .set<Position>({3,3})
+      .add<Position, Global>()
+      .child_of(parent_middle);
+
+    WHEN("world run once") {
+      engine::update_world(world);
+
+      THEN("child and middle_parent updates") {
+        REQUIRE(parent_middle.has<Position, Global>());
+        REQUIRE(child.has<Position, Global>());
+        const auto* parent_middle_global_position = parent_middle.get<Position, Global>();
+        const auto* child_global_position = child.get<Position, Global>();
+
+        REQUIRE(parent_middle_global_position->x == 3);
+        REQUIRE(parent_middle_global_position->y == 3);
+        REQUIRE(child_global_position->x == 6);
+        REQUIRE(child_global_position->y == 6);
+      }
+    }
+    WHEN("top disabled and world run once") {
+      parent_top.add(flecs::Disabled);
+      engine::update_world(world);
+      THEN("middle and child updates without top") {
+        REQUIRE(parent_middle.has<Position, Global>());
+        REQUIRE(child.has<Position, Global>());
+        const auto* parent_middle_global_position = parent_middle.get<Position, Global>();
+        const auto* child_global_position = child.get<Position, Global>();
+
+        REQUIRE(parent_middle_global_position->x == 2);
+        REQUIRE(parent_middle_global_position->y == 2);
+        REQUIRE(child_global_position->x == 5);
+        REQUIRE(child_global_position->y == 5);
+      }
+    }
+    WHEN("middle disabled and world run once") {
+      parent_middle.add(flecs::Disabled);
+      engine::update_world(world);
+      THEN("child updates without top and middle") {
+        REQUIRE(child.has<Position, Global>());
+        const auto* child_global_position = child.get<Position, Global>();
+        REQUIRE(child_global_position->x == 3); //OK
+        REQUIRE(child_global_position->y == 3); //OK
       }
     }
   }

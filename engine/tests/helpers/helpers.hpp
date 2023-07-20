@@ -6,7 +6,7 @@
 
 namespace test {
 
-void disable_all(flecs::world& world, const std::vector<std::string>& exclude = {}) {
+inline void disable_all(flecs::world& world, const std::vector<std::string>& exclude = {}) {
   std::vector<flecs::entity> systems;
   world.filter_builder()
     .with(flecs::System)
