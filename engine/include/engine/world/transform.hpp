@@ -21,4 +21,6 @@ struct Transform {
   glm::mat3 matrix = glm::mat3(1.0f);
 };
 
+struct Global {};
+
 } //end of namespace engine::world

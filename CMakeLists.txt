@@ -27,6 +27,11 @@ find_package(SOKOL REQUIRED)
 find_package(IMGUI REQUIRED)
 find_package(GLM REQUIRED)
 
+if (BUILD_TESTING)
+  enable_testing()
+  find_package(CATCH2 REQUIRED)
+endif()
+
 
 
 add_subdirectory(engine)

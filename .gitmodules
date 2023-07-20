@@ -13,3 +13,6 @@
 [submodule "dep/sokol"]
 	path = dep/sokol
 	url = https://github.com/floooh/sokol.git
+[submodule "dep/Catch2"]
+	path = dep/Catch2
+	url = https://github.com/catchorg/Catch2.git

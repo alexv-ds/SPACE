@@ -56,6 +56,29 @@ static void UpdageWorldObject(flecs::iter it,
   }
 }
 
+static void ApplyGlobalPosition(flecs::iter it,
+                                const Position* local,
+                                Position* global,
+                                const Position* parent_global)
+{
+  if (!it.changed()) {
+    it.skip();
+    return;
+  }
+
+  if (parent_global) {
+    for (auto i : it) {
+      global[i] = parent_global[i];
+      global[i].x += local[i].x;
+      global[i].y += local[i].y;
+    }
+  } else {
+    for (auto i : it) {
+      global[i] = local[i];
+    }
+  }
+}
+
 void init_systems(flecs::world& world) {
   [[maybe_unused]] auto scope = world.scope(world.entity("system"));
 
@@ -66,6 +89,12 @@ void init_systems(flecs::world& world) {
     .arg(4).optional()
     .arg(5).cascade(flecs::ChildOf).optional()
     .iter(UpdageWorldObject);
+
+  world.system<const Position, Position, const Position>("ApplyGlobalPosition")
+    .kind(flecs::PostUpdate)
+    .arg(2).second<Global>()
+    .arg(3).cascade(flecs::ChildOf).optional().second<Global>()
+    .iter(ApplyGlobalPosition);
 }
 
 } //end of engine::world

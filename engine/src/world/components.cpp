@@ -53,6 +53,8 @@ void init_components(flecs::world& world) {
 
   world.component<Transparency>()
     .member<decltype(Transparency::alpha)>("alpha");
+
+  world.component<Global>();
 }
 
 } //end of namespace engine::world
