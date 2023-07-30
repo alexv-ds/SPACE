@@ -10,7 +10,7 @@ struct WorldObject {
   float size_x = 1.0f;
   float size_y = 1.0f;
 
-  //global position
+/*  //global position
   Position global_position;
   Scale global_scale;
   Rotation global_rotation;
@@ -22,7 +22,7 @@ struct WorldObject {
         && other.global_scale.x == this->global_scale.x
         && other.global_scale.y == this->global_scale.y
         && other.global_rotation.angle == this->global_rotation.angle;
-  }
+  }*/
 };
 
 } //end of namespace engine

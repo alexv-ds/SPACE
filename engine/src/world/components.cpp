@@ -26,10 +26,10 @@ void init_components(flecs::world& world) {
 
   world.component<WorldObject>()
     .member<decltype(WorldObject::size_x)>("size_x")
-    .member<decltype(WorldObject::size_y)>("size_y")
-    .member<decltype(WorldObject::global_position)>("global_position")
+    .member<decltype(WorldObject::size_y)>("size_y");
+/*    .member<decltype(WorldObject::global_position)>("global_position")
     .member<decltype(WorldObject::global_scale)>("global_scale")
-    .member<decltype(WorldObject::global_rotation)>("global_rotation");
+    .member<decltype(WorldObject::global_rotation)>("global_rotation");*/
 
   world.component<Transform>();
 

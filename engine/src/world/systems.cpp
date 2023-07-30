@@ -9,6 +9,7 @@
 
 namespace engine::world {
 
+/*
 static void UpdageWorldObject(flecs::iter it,
                               WorldObject* object,
                               const Position* position,
@@ -55,6 +56,7 @@ static void UpdageWorldObject(flecs::iter it,
     }
   }
 }
+*/
 
 static void ApplyGlobalPosition(flecs::iter it,
                                 const Position* local,
@@ -126,13 +128,13 @@ static void ApplyGlobalRotation(flecs::iter it,
 void init_systems(flecs::world& world) {
   [[maybe_unused]] auto scope = world.scope(world.entity("system"));
 
-  world.system<WorldObject, const Position, const Rotation, const Scale, const WorldObject>("UpdateWorldObject")
+/*  world.system<WorldObject, const Position, const Rotation, const Scale, const WorldObject>("UpdateWorldObject")
     .kind(flecs::PostUpdate)
     .arg(2).optional()
     .arg(3).optional()
     .arg(4).optional()
     .arg(5).cascade(flecs::ChildOf).optional()
-    .iter(UpdageWorldObject);
+    .iter(UpdageWorldObject);*/
 
   world.system<const Position, Position, const Position>("ApplyGlobalPosition")
     .kind(flecs::PostUpdate)

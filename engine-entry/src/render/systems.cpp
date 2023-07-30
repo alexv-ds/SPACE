@@ -48,7 +48,7 @@ static void RenderBegin(flecs::iter it) {
     float rotation = 0.0f;
 
     {
-      const world::WorldObject* const camera_world_object = world.entity(entry_consts::main_camera_name)
+/*      const world::WorldObject* const camera_world_object = world.entity(entry_consts::main_camera_name)
         .get<world::WorldObject>();
       if (camera_world_object) {
         rotation = camera_world_object->global_rotation.angle;
@@ -56,6 +56,20 @@ static void RenderBegin(flecs::iter it) {
         position.y = camera_world_object->global_position.y;
         scale.x = camera_world_object->global_scale.x * camera_world_object->size_x;
         scale.y = camera_world_object->global_scale.y * camera_world_object->size_y;
+      }*/
+      flecs::entity camera = world.entity(entry_consts::main_camera_name);
+      if (const auto* const component_rotation = camera.get<world::Rotation, world::Global>(); component_rotation) {
+        rotation = component_rotation->angle;
+      }
+      if (const auto* const component_position = camera.get<world::Position, world::Global>(); component_position) {
+        position.x = component_position->x;
+        position.y = component_position->y;
+      }
+      const auto* const component_scale = camera.get<world::Scale, world::Global>();
+      const auto* const component_world_object = camera.get<world::WorldObject>();
+      if (component_scale && component_world_object) {
+        scale.x = component_scale->x * component_world_object->size_x;
+        scale.y = component_scale->y * component_world_object->size_y;
       }
     }
 
@@ -88,7 +102,7 @@ static void ImguiNewFrame(flecs::iter it) {
   simgui_new_frame({width, height, sapp_frame_duration(), sapp_dpi_scale()});
 }
 
-static void StoreOrdered_V2(flecs::iter it,
+/*static void StoreOrdered_V2(flecs::iter it,
                             const world::WorldObject* object,
                             const world::Transparency* transparency, //optional
                             const world::Color* color) //optional
@@ -110,6 +124,34 @@ static void StoreOrdered_V2(flecs::iter it,
     sgp_pop_transform();
   }
 
+}*/
+
+static void StoreOrdered(flecs::iter it,
+                         const world::WorldObject* world_object,
+                         const world::Position* position,
+                         const world::Scale* scale,
+                         const world::Rotation* rotation,
+                         const world::Color* color,
+                         const world::Transparency* transparency)
+{
+  for (auto i : it) {
+    sgp_push_transform();
+    sgp_translate(position[i].x, position[i].y);
+    if (rotation) {
+      sgp_rotate(-rotation[i].angle);
+    }
+    if (scale) {
+      sgp_scale(scale[i].x, scale[i].y);
+    }
+    const world::Color draw_color = color ? color[i] : world::color::white;
+    const float alpha = transparency ? transparency[i].alpha : 1.0f;
+    sgp_set_color(draw_color.r, draw_color.g, draw_color.b, alpha);
+    sgp_draw_filled_rect(-world_object[i].size_x / 2.0f,
+                         -world_object[i].size_y / 2.0f,
+                         world_object[i].size_x,
+                         world_object[i].size_y);
+    sgp_pop_transform();
+  }
 }
 
 void init_systems(flecs::world & world) {
@@ -136,7 +178,7 @@ void init_systems(flecs::world & world) {
     //.order_by(layer_comparator)
     .iter(StoreOrdered);*/
 
-  world.system<const world::WorldObject,
+/*  world.system<const world::WorldObject,
                const world::Transparency,
                const world::Color>("StoreOrdered")
     .kind<PhaseStoreOrdered>()
@@ -144,7 +186,21 @@ void init_systems(flecs::world & world) {
     .arg(3).optional()
     .with<world::Renderable>()
     .with<world::IntersectsWith>().second(world.entity(entry_consts::main_camera_name))
-    .iter(StoreOrdered_V2);
+    .iter(StoreOrdered_V2);*/
+
+    world.system<const world::WorldObject,
+                 const world::Position,
+                 const world::Scale,
+                 const world::Rotation,
+                 const world::Color,
+                 const world::Transparency>()
+      .kind<PhaseStoreOrdered>()
+      .arg(2).second<world::Global>()
+      .arg(3).optional().second<world::Global>()
+      .arg(4).optional().second<world::Global>()
+      .arg(5).optional()
+      .arg(6).optional()
+      .iter(StoreOrdered);
 
   world.system("Commit")
     .kind<PhaseCommit>()
